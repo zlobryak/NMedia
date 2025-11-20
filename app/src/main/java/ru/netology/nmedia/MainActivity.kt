@@ -1,6 +1,7 @@
 package ru.netology.nmedia
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -8,6 +9,7 @@ import androidx.core.view.WindowInsetsCompat
 import ru.netology.nmedia.data.Post
 import ru.netology.nmedia.databinding.ActivityMainBinding
 import ru.netology.nmedia.functions.counterFormatter
+import kotlin.math.log
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         )
 
         with(binding) {
+            avatar.setImageResource(R.drawable.ic_netology_48dp)
             author.text = post.author
             content.text = post.content
             published.text = post.published
@@ -41,6 +44,7 @@ class MainActivity : AppCompatActivity() {
                 icLikes.setImageResource(R.drawable.ic_liked_24)
             }
             icLikes.setOnClickListener {
+//                Log.d("test", "like")
                 post.likedByMe = !post.likedByMe
                 icLikes.setImageResource(
                     if (post.likedByMe) R.drawable.ic_liked_24 else R.drawable.ic_like_24
@@ -52,6 +56,9 @@ class MainActivity : AppCompatActivity() {
                 post.shareCount++
                 shareCount.text = counterFormatter(post.shareCount)
             }
+//            root.setOnClickListener { Log.d("test", "root")}
+//            avatar.setOnClickListener { Log.d("test", "avatar") }
+
         }
     }
 }
