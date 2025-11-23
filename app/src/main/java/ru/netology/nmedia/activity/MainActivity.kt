@@ -17,10 +17,10 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        val margin = resources.getDimensionPixelSize(R.dimen.common_spacing)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left + margin, systemBars.top + margin, systemBars.right + margin, systemBars.bottom + margin)
             insets
         }
 
