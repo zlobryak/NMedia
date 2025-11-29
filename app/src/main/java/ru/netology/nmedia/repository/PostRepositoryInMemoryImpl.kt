@@ -97,4 +97,9 @@ class PostRepositoryInMemoryImpl : PostRepository {
         posts = posts.map { if (it.id != id) it else it.copy(shareCount = it.shareCount + 1) }
         data.value = posts
     }
+
+    override fun removeBbyId(id: Long) {
+        posts = posts.filter { it.id != id }
+        data.value = posts
+    }
 }

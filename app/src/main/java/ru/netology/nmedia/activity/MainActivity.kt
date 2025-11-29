@@ -31,11 +31,14 @@ class MainActivity : AppCompatActivity() {
 
         val viewModel: PostViewModel by viewModels()
         val adapter = PostsAdapter(
-            { post ->
+            onLikeListener = { post ->
                 viewModel.likeById(post.id)
             },
-            { post ->
+            onShareListener = { post ->
                 viewModel.shareById(post.id)
+            },
+            onRemoveListener = { post ->
+                viewModel.removeById(post.id)
             }
         )
         binding.list.adapter = adapter
