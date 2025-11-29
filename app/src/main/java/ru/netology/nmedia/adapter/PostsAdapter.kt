@@ -2,6 +2,7 @@ package ru.netology.nmedia.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -12,17 +13,18 @@ import ru.netology.nmedia.functions.counterFormatter
 
 typealias OnClickListener = (Post) -> Unit
 
-
 class PostsAdapter(
     private val onLikeListener: OnClickListener,
-    private val onShareListener: OnClickListener
+    private val onShareListener: OnClickListener,
+    private val onRemoveListener: OnClickListener
+
 ) :
     ListAdapter<Post, PostViewHolder>(PostDiffUtils) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val view = CardPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return PostViewHolder(
-            view, onLikeListener, onShareListener
+            view, onLikeListener, onShareListener, onRemoveListener
         )
     }
 
@@ -34,7 +36,8 @@ class PostsAdapter(
 class PostViewHolder(
     private val binding: CardPostBinding,
     private val onLikeListener: OnClickListener,
-    private val onShareListener: OnClickListener
+    private val onShareListener: OnClickListener,
+    private val onRemoveListener: OnClickListener
 ) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(post: Post) {
@@ -53,6 +56,22 @@ class PostViewHolder(
             }
             icShare.setOnClickListener {
                 onShareListener(post)
+            }
+            menuButton.setOnClickListener {
+                PopupMenu(it.context, it).apply {
+                    inflate(R.menu.post_menu)
+                    setOnMenuItemClickListener { menuItem ->
+                        when (menuItem.itemId) {
+                            R.id.remove -> {
+                                onRemoveListener(post)
+                                true
+                            }
+
+                            else -> false
+                        }
+                    }
+                    show()
+                }
             }
         }
     }
