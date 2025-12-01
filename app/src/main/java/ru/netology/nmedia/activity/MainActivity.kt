@@ -1,6 +1,7 @@
 package ru.netology.nmedia.activity
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -9,6 +10,7 @@ import androidx.core.view.WindowInsetsCompat
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.ActivityMainBinding
+import ru.netology.nmedia.utils.AndroidUtils
 import ru.netology.nmedia.viewmodel.PostViewModel
 
 class MainActivity : AppCompatActivity() {
@@ -41,6 +43,19 @@ class MainActivity : AppCompatActivity() {
                 viewModel.removeById(post.id)
             }
         )
+        binding.saveButton.setOnClickListener {
+            with(binding.content) {
+
+                if (text.isNullOrBlank()) {
+                    Toast.makeText(context, R.string.text_is_blank, Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                viewModel.save(text.toString())
+                setText("")
+                clearFocus()
+                AndroidUtils.hideKeyboard(this)
+            }
+        }
         binding.list.adapter = adapter
         viewModel.data.observe(this) { posts ->
             adapter.submitList(posts)
