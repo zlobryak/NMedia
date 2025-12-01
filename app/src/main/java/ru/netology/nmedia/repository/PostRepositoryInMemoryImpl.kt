@@ -79,6 +79,7 @@ class PostRepositoryInMemoryImpl : PostRepository {
             likedByMe = false
         )
     )
+    private var nextId = posts.first().id
     private val data = MediatorLiveData(posts)
 
     override fun getAll(): LiveData<List<Post>> = data
@@ -100,6 +101,26 @@ class PostRepositoryInMemoryImpl : PostRepository {
 
     override fun removeBbyId(id: Long) {
         posts = posts.filter { it.id != id }
+        data.value = posts
+    }
+
+    override fun save(post: Post) {
+        if (post.id == 0L) {
+            posts = listOf(
+                post.copy(
+                    id = nextId++,
+                    author = "Me",
+                    likedByMe = false,
+                    published = "now"
+                )
+            ) + posts
+            data.value = posts
+            return
+        }
+
+        posts = posts.map {
+            if (it.id != post.id) it else it.copy(content = post.content)
+        }
         data.value = posts
     }
 }
