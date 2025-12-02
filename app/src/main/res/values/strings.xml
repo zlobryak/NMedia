@@ -12,4 +12,8 @@
     <string name="content">Content</string>
     <string name="text_is_blank">Text is blank!</string>
     <string name="edit">Edit</string>
+    <string name="save_button">Save button</string>
+    <string name="cancel_button">Cancel button</string>
+    <string name="edit_message">Edit Message</string>
+    <string name="original_message_text">Original message text...</string>
 </resources>

@@ -109,6 +109,7 @@ class PostViewHolder(
             icShare.setOnClickListener {
                 listener.onShare(post)
             }
+
             // Обработка нажатия на кнопку меню (три точки)
             menuButton.setOnClickListener {
                 PopupMenu(it.context, it).apply {

@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity() {
             }
 
         )
+
         adapter.registerAdapterDataObserver(
             object : RecyclerView.AdapterDataObserver() {
                 override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
@@ -69,26 +70,42 @@ class MainActivity : AppCompatActivity() {
         viewModel.edited.observe(this) { post ->
             if (post.id != 0L) {
                 binding.content.setText(post.content)
+                binding.editGroup.visibility = android.view.View.VISIBLE
+                binding.editPreviewText.text = post.content
                 AndroidUtils.showKeyboard(binding.content)
+            } else {
+                binding.editGroup.visibility = android.view.View.GONE
+                binding.content.setText("")
             }
-        }
 
-        binding.saveButton.setOnClickListener {
-            with(binding.content) {
+            binding.saveButton.setOnClickListener {
+                with(binding.content) {
 
-                if (text.isNullOrBlank()) {
-                    Toast.makeText(context, R.string.text_is_blank, Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
+                    if (text.isNullOrBlank()) {
+                        Toast.makeText(context, R.string.text_is_blank, Toast.LENGTH_SHORT).show()
+                        return@setOnClickListener
+                    }
+                    viewModel.save(text.toString())
+                    setText("")
+                    clearFocus()
+                    binding.editGroup.visibility = android.view.View.GONE
+                    AndroidUtils.hideKeyboard(this)
                 }
-                viewModel.save(text.toString())
-                setText("")
-                clearFocus()
-                AndroidUtils.hideKeyboard(this)
             }
-        }
-        binding.list.adapter = adapter
-        viewModel.data.observe(this) { posts ->
-            adapter.submitList(posts)
+
+            binding.cancelButton.setOnClickListener {
+                with(binding.content) {
+                    setText("")
+                    clearFocus()
+                    binding.editGroup.visibility = android.view.View.GONE
+                    AndroidUtils.hideKeyboard(this)
+                }
+            }
+            binding.list.adapter = adapter
+            viewModel.data.observe(this) { posts ->
+                adapter.submitList(posts)
+
+            }
 
         }
     }
