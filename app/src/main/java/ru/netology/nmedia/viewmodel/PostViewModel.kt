@@ -30,8 +30,11 @@ class PostViewModel : ViewModel() {
             if (trim != post.content) {
                 repository.save(post.copy(content = trim))
             }
-
         }
         edited.value = empty
+    }
+
+    fun edit(post: Post) {
+        edited.value = post
     }
 }
