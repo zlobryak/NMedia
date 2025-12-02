@@ -11,42 +11,51 @@ import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.functions.counterFormatter
 
-// Тип-псевдоним для функции-слушателя, которая принимает Post и ничего не возвращает
-typealias OnClickListener = (Post) -> Unit
+/**
+ * Интерфейс для обработки пользовательских действий с постами.
+ * Реализуется, например, во ViewModel или Activity, чтобы реагировать на клики.
+ */
+interface PostListener {
+    fun onEdit(post: Post)
+    fun onRemove(post: Post)
+    fun onLike(post: Post)
+    fun onShare(post: Post)
+}
 
 /**
- * Адаптер для отображения списка постов в RecyclerView
- * Использует ListAdapter для эффективного обновления списка с помощью DiffUtil
- * @param onLikeListener слушатель для обработки нажатий на "лайк"
- * @param onShareListener слушатель для обработки нажатий на "поделиться"
- * @param onRemoveListener слушатель для обработки нажатий на "удалить"
+ * Адаптер для отображения списка постов в RecyclerView.
+ * Использует ListAdapter и DiffUtil для эффективного обновления данных.
+ * Все взаимодействия с пользователем делегируются через единый интерфейс PostListener.
+ *
+ * @param listener обработчик действий пользователя (лайк, шер, удаление, редактирование)
  */
 class PostsAdapter(
-    private val onLikeListener: OnClickListener,
-    private val onShareListener: OnClickListener,
-    private val onRemoveListener: OnClickListener
-
+    private val listener: PostListener
 ) :
     ListAdapter<Post, PostViewHolder>(PostDiffUtils) {
 
     /**
-     * Создает новый ViewHolder для элемента списка
-     * @param parent родительский ViewGroup
-     * @param viewType тип представления (не используется в данном случае)
-     * @return новый экземпляр PostViewHolder
+     * Создаёт новый ViewHolder для элемента списка.
+     * Использует View Binding для инфляции макета карточки поста.
+     *
+     * @param parent родительский ViewGroup, к которому будет присоединён элемент
+     * @param viewType тип элемента (в данном случае не используется, так как все элементы одинаковые)
+     * @return экземпляр PostViewHolder, готовый к привязке данных
      */
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         // Создание привязки (binding) для макета карточки поста
         val view = CardPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return PostViewHolder(
-            view, onLikeListener, onShareListener, onRemoveListener
+            view, listener
         )
     }
 
     /**
-     * Привязывает данные поста к ViewHolder
-     * @param holder ViewHolder, который будет связан с данными
-     * @param position позиция элемента в списке
+     * Связывает данные конкретного поста с его ViewHolder'ом.
+     * Вызывается каждый раз, когда элемент списка появляется или обновляется.
+     *
+     * @param holder ViewHolder, который будет обновлён
+     * @param position позиция элемента в текущем списке
      */
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
         // Получение элемента по позиции и передача его в метод bind ViewHolder
@@ -55,79 +64,72 @@ class PostsAdapter(
 }
 
 /**
- * ViewHolder для отдельного элемента списка (поста)
- * Отвечает за привязку данных к представлению и обработку взаимодействий с пользователем
- * @param binding привязка к макету карточки поста
- * @param onLikeListener слушатель для обработки нажатий на "лайк"
- * @param onShareListener слушатель для обработки нажатий на "поделиться"
- * @param onRemoveListener слушатель для обработки нажатий на "удалить"
+ * ViewHolder для отдельного элемента списка (поста).
+ * Отвечает за привязку данных к UI-элементам и установку обработчиков кликов.
+ *
+ * @param binding привязка к макету карточки поста (CardPostBinding)
+ * @param listener интерфейс для передачи действий пользователя наверх
  */
 class PostViewHolder(
     private val binding: CardPostBinding,
-    private val onLikeListener: OnClickListener,
-    private val onShareListener: OnClickListener,
-    private val onRemoveListener: OnClickListener
+    private val listener: PostListener
 ) : RecyclerView.ViewHolder(binding.root) {
 
     /**
-     * Привязывает данные поста к элементам интерфейса
-     * Устанавливает текст, изображения и обработчики кликов
-     * @param post пост, данные которого нужно отобразить
+     * Привязывает данные поста к элементам интерфейса.
+     * Устанавливает текст, изображения, форматирует счётчики и назначает обработчики кликов.
+     *
+     * @param post данные поста, которые нужно отобразить
      */
     fun bind(post: Post) {
         binding.apply {
-            // Установка изображения аватара (в данном случае, используется стандартное изображение)
+            // Установка аватара автора (в данном случае — фиксированная иконка)
             avatar.setImageResource(R.drawable.ic_netology_48dp)
-            // Установка имени автора поста
+            // Имя автора поста
             author.text = post.author
-            // Установка содержимого поста
+            // Текст поста
             content.text = post.content
-            // Установка даты публикации
+            // Время публикации
             published.text = post.published
-            // Установка количества лайков с форматированием (например, "1K" вместо "1000")
+            // Форматированное количество лайков (например, "1K", "2.5M")
             likesCount.text = counterFormatter(post.likes)
-            // Установка количества шеров с форматированием
+            // Форматированное количество репостов
             shareCount.text = counterFormatter(post.shareCount)
-            // Проверка, лайкнут ли пост текущим пользователем, и установка соответствующего изображения
+            // Установка иконки лайка в зависимости от состояния likedByMe
             if (post.likedByMe) {
-                // Если пост лайкнут, устанавливается изображение лайкнутого сердечка
                 icLikes.setImageResource(R.drawable.ic_liked_24)
-            } else (
-                    // Если пост не лайкнут, устанавливается изображение обычного сердечка
-                    icLikes.setImageResource((R.drawable.ic_like_24)))
-            // Установка слушателя клика на иконку лайка
+            } else {
+                icLikes.setImageResource(R.drawable.ic_like_24)
+            }
+            // Обработка нажатия на иконку "лайк"
             icLikes.setOnClickListener {
-                // Вызов переданного слушателя с текущим постом
-                onLikeListener(post)
+                listener.onLike(post)
             }
-            // Установка слушателя клика на иконку шеринга
+            // Обработка нажатия на иконку "поделиться"
             icShare.setOnClickListener {
-                // Вызов переданного слушателя с текущим постом
-                onShareListener(post)
+                listener.onShare(post)
             }
-            // Установка слушателя клика на кнопку меню (три точки)
+            // Обработка нажатия на кнопку меню (три точки)
             menuButton.setOnClickListener {
-                // Создание и настройка всплывающего меню
                 PopupMenu(it.context, it).apply {
-                    // Загрузка меню из ресурсов
+                    // Загрузка меню из ресурсов (post_menu.xml)
                     inflate(R.menu.post_menu)
-                    // Установка слушателя клика по элементам меню
+                    // Обработка выбора пунктов меню
                     setOnMenuItemClickListener { menuItem ->
-                        // Обработка нажатия на элементы меню
                         when (menuItem.itemId) {
-                            // Если нажата кнопка "удалить"
                             R.id.remove -> {
-                                // Вызов слушателя удаления с текущим постом
-                                onRemoveListener(post)
-                                // Возврат true, чтобы указать, что клик обработан
+                                listener.onRemove(post)
                                 true
                             }
 
-                            // Для всех остальных элементов меню
+                            R.id.edit -> {
+                                listener.onEdit(post)
+                                true
+                            }
+
                             else -> false
                         }
                     }
-                    // Отображение всплывающего меню
                     show()
                 }
             }
@@ -136,16 +138,18 @@ class PostViewHolder(
 }
 
 /**
- * Объект для сравнения элементов списка с помощью DiffUtil
- * Необходим для эффективного обновления списка в RecyclerView
+ * Объект, реализующий логику сравнения постов для DiffUtil.
+ * Используется ListAdapter для определения, какие элементы изменились,
+ * и минимизации количества анимаций и перерисовок.
  */
 object PostDiffUtils : DiffUtil.ItemCallback<Post>() {
     /**
-     * Проверяет, представляют ли два элемента один и тот же объект
-     * Сравнивает по id, так как это уникальный идентификатор поста
-     * @param oldItem старый элемент
-     * @param newItem новый элемент
-     * @return true, если элементы представляют один и тот же объект
+     * Определяет, представляют ли два объекта один и тот же элемент списка.
+     * Сравнение происходит по уникальному идентификатору — id.
+     *
+     * @param oldItem предыдущая версия поста
+     * @param newItem новая версия поста
+     * @return true, если это один и тот же пост (по id)
      */
     override fun areItemsTheSame(
         oldItem: Post,
@@ -155,11 +159,12 @@ object PostDiffUtils : DiffUtil.ItemCallback<Post>() {
     }
 
     /**
-     * Проверяет, содержат ли два элемента одинаковые данные
-     * Сравнивает по всем полям объекта Post
-     * @param oldItem старый элемент
-     * @param newItem новый элемент
-     * @return true, если содержимое элементов одинаково
+     * Определяет, изменилось ли содержимое поста.
+     * Использует полное сравнение объектов (через переопределённый equals в Post).
+     *
+     * @param oldItem предыдущая версия поста
+     * @param newItem новая версия поста
+     * @return true, если содержимое не изменилось
      */
     override fun areContentsTheSame(
         oldItem: Post,
