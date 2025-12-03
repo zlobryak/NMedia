@@ -99,6 +99,7 @@ class MainActivity : AppCompatActivity() {
                     clearFocus()
                     binding.editGroup.visibility = android.view.View.GONE
                     AndroidUtils.hideKeyboard(this)
+                    viewModel.resetEdited() //Возвращает стандартный шаблон для создания поста
                 }
             }
             binding.list.adapter = adapter
