@@ -3,10 +3,17 @@
     <string name="nmedia">NMedia!</string>
     <string name="user_avatar">User avatar</string>
     <string name="menu_button_description">Menu button</string>
-    <string name="likes_count">10</string>
+    <string name="likes_count" translatable="false">10</string>
     <string name="share_icon">Share icon</string>
     <string name="likes_icon">Likes icon</string>
-    <string name="share_cunt">5</string>
-    <string name="views_count">5</string>
+    <string name="share_cunt" translatable="false">5</string>
+    <string name="views_count" translatable="false">5</string>
     <string name="remove">Remove</string>
+    <string name="content">Content</string>
+    <string name="text_is_blank">Text is blank!</string>
+    <string name="edit">Edit</string>
+    <string name="save_button">Save button</string>
+    <string name="cancel_button">Cancel button</string>
+    <string name="edit_message">Edit Message</string>
+    <string name="original_message_text">Original message text...</string>
 </resources>
