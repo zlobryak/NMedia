@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="user_avatar">User avatar</string>
-    <string name="likes_count">10</string>
-    <string name="share_cunt">5</string>
-    <string name="views_count">5</string>
+    <string name="likes_count" translatable="false">10</string>
+    <string name="share_cunt" translatable="false">5</string>
+    <string name="views_count" translatable="false">5</string>
 </resources>

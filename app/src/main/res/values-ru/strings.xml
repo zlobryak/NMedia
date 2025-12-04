@@ -4,10 +4,14 @@
     <string name="nmedia">НМедиа!</string>
     <string name="user_avatar">Аватар пользователяс</string>
     <string name="menu_button_description">Кнопка меню</string>
-    <string name="likes_count">10</string>
     <string name="share_icon">Иконка счетчика отправок</string>
     <string name="likes_icon">Иконка лайков</string>
-    <string name="share_cunt">5</string>
-    <string name="views_count">5</string>
     <string name="remove">Удалить</string>
+    <string name="content">Ввод текста</string>
+    <string name="text_is_blank">Текст не может быть пустым!</string>
+    <string name="edit">Редактировать</string>
+    <string name="save_button">Кнопка сохранить</string>
+    <string name="cancel_button">Кнопка отмены</string>
+    <string name="edit_message">Редактирование сообщения</string>
+    <string name="original_message_text">Текст оригинального сообщения...</string>
 </resources>
