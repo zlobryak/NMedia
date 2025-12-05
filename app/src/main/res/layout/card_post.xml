@@ -45,9 +45,9 @@
         style="@style/Widget.AppCompat.StandardButtonWithText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingEnd="0dp"
-        android:paddingStart="0dp"
         android:contentDescription="@string/menu_button_description"
+        android:paddingStart="0dp"
+        android:paddingEnd="0dp"
         app:icon="@drawable/ic_more_vert_24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -87,7 +87,7 @@
         app:icon="@drawable/ic_like_selector"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/barrier2"
-        tools:text="10"/>
+        tools:text="10" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/ic_share"
@@ -106,14 +106,17 @@
         style="@style/Widget.AppCompat.StandardButtonWithText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="-72dp"
         android:background="@android:color/transparent"
         android:contentDescription="@string/share_icon"
-        android:paddingEnd="@dimen/ic_view_padding_end"
         app:icon="@drawable/ic_views_24"
         app:layout_constraintBottom_toBottomOf="@id/ic_likes"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/ic_likes"
-        tools:text="1" />
+        tools:text="1000"/>
+    <!--        layout_marginStart="-72dp" добавлен, чтобы оставлять место
+    под разряды цифр. Значение после форматирования не должно быть больше 4 знаков-->
+
 
     <View
         android:id="@+id/edit_divider"
