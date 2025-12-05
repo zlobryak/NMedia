@@ -91,16 +91,12 @@ class PostViewHolder(
             content.text = post.content
             // Время публикации
             published.text = post.published
-            // Форматированное количество лайков (например, "1K", "2.5M")
-            likesCount.text = counterFormatter(post.likes)
             // Форматированное количество репостов
-            shareCount.text = counterFormatter(post.shareCount)
+            icShare.text = counterFormatter(post.shareCount)
             // Установка иконки лайка в зависимости от состояния likedByMe
-            if (post.likedByMe) {
-                icLikes.setImageResource(R.drawable.ic_liked_24)
-            } else {
-                icLikes.setImageResource(R.drawable.ic_like_24)
-            }
+            icLikes.isChecked = post.likedByMe
+            // Форматированное количество лайков (например, "1K", "2.5M")
+            icLikes.text = counterFormatter(post.likes)
             // Обработка нажатия на иконку "лайк"
             icLikes.setOnClickListener {
                 listener.onLike(post)
@@ -134,6 +130,8 @@ class PostViewHolder(
                     show()
                 }
             }
+
+            icViews.text = counterFormatter(post.views)
         }
     }
 }
