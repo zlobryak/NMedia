@@ -1,5 +1,7 @@
 package ru.netology.nmedia.activity
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -51,6 +53,20 @@ class MainActivity : AppCompatActivity() {
 
                 override fun onShare(post: Post) {
                     viewModel.shareById(post.id)
+                    val intent = Intent()
+                        .putExtra(Intent.EXTRA_TEXT, post.content)
+                        .setAction(Intent.ACTION_SEND)
+                        .setType("text/plain")
+                    try {
+
+                        startActivity(Intent.createChooser(intent, null))
+                    } catch (_: ActivityNotFoundException) {
+                        Toast.makeText(
+                            this@MainActivity,
+                            getString(R.string.app_is_not_found),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
 
             }
