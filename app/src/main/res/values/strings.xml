@@ -21,4 +21,7 @@
     <string name="add_post">Add post</string>
     <string name="edit_mode">Edit mode</string>
     <string name="new_post">New post</string>
+    <string name="vide_preview">Video preview</string>
+    <string name="views_icon">Views icon</string>
+    <string name="play_button">Play button</string>
 </resources>

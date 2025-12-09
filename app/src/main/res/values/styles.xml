@@ -19,4 +19,14 @@
         <item name="android:insetBottom">0dp</item>
     </style>
 
+    <style name="Widget.AppCompat.PlayButton" parent="Widget.Material3.Button.IconButton">
+        <item name="iconTint">#FFF</item>
+        <item name="android:textColor">?attr/colorControlNormal</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="backgroundTint">#99000000</item>
+    </style>
+
 </resources>
