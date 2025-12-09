@@ -6,7 +6,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.ActivityNewPostBinding
+import ru.netology.nmedia.dto.Post
 
 class NewPostActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,17 +21,30 @@ class NewPostActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        // Получаем пост для редактирования (может быть null — тогда новый)
+        val editingPost = intent.getParcelableExtra<Post>("post", Post::class.java)
+
+        if (editingPost != null) {
+            binding.content.setText(editingPost.content)
+            supportActionBar?.title = getString(R.string.edit_mode)
+        } else {
+            supportActionBar?.title = getString(R.string.new_post)
+        }
 
         binding.saveButton.setOnClickListener {
-            val content = binding.content.text?.toString()
-            if (content.isNullOrBlank()) {
+            val text = binding.content.text?.toString()?.trim()
+            if (text.isNullOrBlank()) {
                 setResult(RESULT_CANCELED)
             } else {
-                val result = Intent()
-                result.putExtra(Intent.EXTRA_TEXT, content)
-                setResult(RESULT_OK, result)
+                val resultPost = editingPost?.copy(content = text) ?: Post(
+                    id = 0L, // временный ID для новых
+                    author = "Me", // или брать из профиля
+                    content = text,
+                    published = "Just now"
+                )
+                setResult(RESULT_OK, Intent().putExtra("result_post", resultPost))
+                finish()
             }
-            finish()
         }
     }
 }
