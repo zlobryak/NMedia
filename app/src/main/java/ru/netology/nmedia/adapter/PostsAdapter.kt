@@ -106,7 +106,7 @@ class PostViewHolder(
                 listener.onShare(post)
             }
 
-            // Обработка нажатия на кнопку меню (три точки)
+//             Обработка нажатия на кнопку меню (три точки) для открытия меню поста
             menuButton.setOnClickListener {
                 PopupMenu(it.context, it).apply {
                     // Загрузка меню из ресурсов (post_menu.xml)

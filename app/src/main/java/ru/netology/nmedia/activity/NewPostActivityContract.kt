@@ -4,20 +4,21 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
+import ru.netology.nmedia.dto.Post
 
-class NewPostActivityContract : ActivityResultContract<Unit, String?>() {
+class NewPostActivityContract : ActivityResultContract<Post?, Post?>() {
     override fun createIntent(
         context: Context,
-        input: Unit
-    ): Intent = Intent(context, NewPostActivity::class.java)
+        input: Post?
+    ): Intent = Intent(context, NewPostActivity::class.java).apply {
+        putExtra("post", input) }
 
     override fun parseResult(
         resultCode: Int,
         intent: Intent?
-    ): String? = if (resultCode == Activity.RESULT_OK) {
-        intent?.getStringExtra(Intent.EXTRA_TEXT)
+    ): Post? = if (resultCode == Activity.RESULT_OK) {
+        intent?.getParcelableExtra("result_post", Post::class.java)
     } else {
         null
     }
-
 }
