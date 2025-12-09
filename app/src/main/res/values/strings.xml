@@ -15,7 +15,8 @@
     <string name="save_button">Save button</string>
     <string name="cancel_button">Cancel button</string>
     <string name="edit_message">Edit Message</string>
-    <string name="original_message_text">Original message text...</string>
+    <string name="original_message_text">Original message text…</string>
     <string name="app_is_not_found">App is not found</string>
     <string name="text_is_blank_error">Text is blank!</string>
+    <string name="add_post">Add post</string>
 </resources>

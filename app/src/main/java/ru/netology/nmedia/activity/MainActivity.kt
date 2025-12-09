@@ -5,6 +5,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.launch
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -83,6 +85,7 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
+
         viewModel.edited.observe(this) { post ->
             if (post.id != 0L) {
                 binding.content.setText(post.content)
@@ -123,6 +126,15 @@ class MainActivity : AppCompatActivity() {
                 adapter.submitList(posts)
 
             }
+
+            val newPostLuncher: ActivityResultLauncher<Unit> =
+                registerForActivityResult(NewPostActivityContract()) { result ->
+                    if (result != null) {
+                        viewModel.save(result)
+                    }
+                }
+
+            binding.addButton.setOnClickListener { newPostLuncher.launch() }
 
         }
     }

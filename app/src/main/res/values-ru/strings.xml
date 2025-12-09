@@ -13,7 +13,8 @@
     <string name="save_button">Кнопка сохранить</string>
     <string name="cancel_button">Кнопка отмены</string>
     <string name="edit_message">Редактирование сообщения</string>
-    <string name="original_message_text">Текст оригинального сообщения...</string>
+    <string name="original_message_text">Текст оригинального сообщения…</string>
     <string name="app_is_not_found">Приложение не найдено.</string>
     <string name="text_is_blank_error">Текст пустой</string>
+    <string name="add_post">Добавить пост</string>
 </resources>
