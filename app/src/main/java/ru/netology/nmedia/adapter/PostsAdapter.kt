@@ -1,6 +1,7 @@
 package ru.netology.nmedia.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
@@ -20,6 +21,7 @@ interface PostListener {
     fun onRemove(post: Post)
     fun onLike(post: Post)
     fun onShare(post: Post)
+    fun onOpenVideo(url: String)
 }
 
 /**
@@ -105,8 +107,7 @@ class PostViewHolder(
             icShare.setOnClickListener {
                 listener.onShare(post)
             }
-
-            // Обработка нажатия на кнопку меню (три точки)
+//             Обработка нажатия на кнопку меню (три точки) для открытия меню поста
             menuButton.setOnClickListener {
                 PopupMenu(it.context, it).apply {
                     // Загрузка меню из ресурсов (post_menu.xml)
@@ -132,6 +133,31 @@ class PostViewHolder(
             }
 
             icViews.text = counterFormatter(post.views)
+            // Обработка видео-превью
+            if (!post.videoUrl.isNullOrBlank()) {
+                // Показываем группу с превью, если есть ссылка на видео
+                editGroup.visibility = View.VISIBLE
+                //Ставим заглушку на картинку
+                videoPreview.setImageResource(R.drawable.preview_image)
+                //Подставляем заголовок
+                videoPreviewText.text = post.videoPreviewText
+                //Подставляем количество просмотров
+                videoPreviewCount.text = post.videoViewsCount
+            }
+            playArrow.setOnClickListener {
+                post.videoUrl?.let { url ->
+                    listener.onOpenVideo(url)
+                }
+//                val intent = Intent(Intent.ACTION_VIEW, post.videoUrl?.toUri())
+//                itemView.context.startActivity(intent)
+            }
+            videoPreview.setOnClickListener {
+//                val intent = Intent(Intent.ACTION_VIEW, post.videoUrl?.toUri())
+//                itemView.context.startActivity(intent)
+                post.videoUrl?.let { url ->
+                    listener.onOpenVideo(url)
+                }
+            }
         }
     }
 }

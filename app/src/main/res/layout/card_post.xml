@@ -15,7 +15,7 @@
         app:layout_constraintBottom_toBottomOf="@id/barrier"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:srcCompat="@sample/post_avatars" />
+        tools:srcCompat="@drawable/ic_launcher_foreground" />
 
     <TextView
         android:id="@+id/author"
@@ -28,7 +28,7 @@
         app:layout_constraintEnd_toStartOf="@id/menu_button"
         app:layout_constraintStart_toEndOf="@id/avatar"
         app:layout_constraintTop_toTopOf="@id/avatar"
-        tools:text="@sample/posts.json/data/author" />
+        tools:text="Нетология. Университет интернет-профессий будущего" />
 
     <TextView
         android:id="@+id/published"
@@ -38,7 +38,7 @@
         app:layout_constraintBottom_toBottomOf="@id/avatar"
         app:layout_constraintStart_toEndOf="@id/avatar"
         app:layout_constraintTop_toBottomOf="@id/author"
-        tools:text="@sample/posts.json/data/published" />
+        tools:text="21 мая в 18:36" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/menu_button"
@@ -59,6 +59,7 @@
         app:barrierDirection="bottom"
         app:constraint_referenced_ids="avatar, published, menu_button" />
 
+
     <TextView
         android:id="@+id/content"
         android:layout_width="0dp"
@@ -67,7 +68,7 @@
         android:layout_marginTop="@dimen/common_spacing"
         android:autoLink="web"
         app:layout_constraintTop_toBottomOf="@id/barrier"
-        tools:text="@sample/posts.json/data/content" />
+        tools:text="Привет, это новая Нетология! Когда-то Нетология начиналась с интенсивов по онлайн-маркетингу. Затем появились курсы по дизайну, разработке, аналитике и управлению. Мы растём сами и помогаем расти студентам: от новичков до уверенных профессионалов. Но самое важное остаётся с нами: мы верим, что в каждом уже есть сила, которая заставляет хотеть больше, целиться выше, бежать быстрее. Наша миссия — помочь встать на путь роста и начать цепочку перемен → http://netolo.gy/fyb" />
 
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/barrier2"
@@ -75,6 +76,61 @@
         android:layout_height="wrap_content"
         app:barrierDirection="bottom"
         app:constraint_referenced_ids="content" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/edit_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="video_preview, video_preview_text, video_preview_count, play_arrow" />
+
+    <ImageView
+        android:id="@+id/video_preview"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/vide_preview"
+        android:scaleType="fitCenter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/barrier2"
+        tools:srcCompat="@drawable/preview_image" />
+
+    <TextView
+        android:id="@+id/video_preview_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/edit_color"
+        app:layout_constraintStart_toStartOf="@id/video_preview"
+        app:layout_constraintTop_toBottomOf="@id/video_preview"
+        tools:text="Текст под видео превью" />
+
+    <TextView
+        android:id="@+id/video_preview_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@id/video_preview_text"
+        app:layout_constraintTop_toBottomOf="@id/video_preview_text"
+        tools:text="8576 просмотров" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/play_arrow"
+        style="@style/Widget.AppCompat.PlayButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/play_button"
+        app:icon="@drawable/play_arrow_24"
+        app:layout_constraintEnd_toEndOf="@id/video_preview"
+        app:layout_constraintStart_toStartOf="@id/video_preview"
+        app:layout_constraintBottom_toBottomOf="@id/video_preview"
+        app:layout_constraintTop_toTopOf="@id/video_preview"/>
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="video_preview_count" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/ic_likes"
@@ -86,7 +142,7 @@
         android:contentDescription="@string/likes_icon"
         app:icon="@drawable/ic_like_selector"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/barrier2"
+        app:layout_constraintTop_toTopOf="@id/barrier3"
         tools:text="10" />
 
     <com.google.android.material.button.MaterialButton
@@ -99,7 +155,7 @@
         app:layout_constraintBottom_toBottomOf="@id/ic_likes"
         app:layout_constraintStart_toEndOf="@id/ic_likes"
         app:layout_constraintTop_toTopOf="@id/ic_likes"
-        tools:text="10" />/>
+        tools:text="10" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/ic_views"
@@ -108,12 +164,12 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="-72dp"
         android:background="@android:color/transparent"
-        android:contentDescription="@string/share_icon"
+        android:contentDescription="@string/views_icon"
         app:icon="@drawable/ic_views_24"
         app:layout_constraintBottom_toBottomOf="@id/ic_likes"
         app:layout_constraintStart_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/ic_likes"
-        tools:text="1000"/>
+        tools:text="1000" />
     <!--        layout_marginStart="-72dp" добавлен, чтобы оставлять место
     под разряды цифр. Значение после форматирования не должно быть больше 4 знаков-->
 
@@ -128,5 +184,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/ic_likes" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
