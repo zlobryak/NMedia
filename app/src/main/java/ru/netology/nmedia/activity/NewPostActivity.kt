@@ -22,7 +22,7 @@ class NewPostActivity : AppCompatActivity() {
             insets
         }
         // Получаем пост для редактирования (может быть null — тогда новый)
-        val editingPost = intent.getParcelableExtra<Post>("post", Post::class.java)
+        val editingPost = intent.getParcelableExtra<Post>("post")
 
         if (editingPost != null) {
             binding.content.setText(editingPost.content)
@@ -40,7 +40,7 @@ class NewPostActivity : AppCompatActivity() {
                     id = 0L, // временный ID для новых
                     author = "Me", // или брать из профиля
                     content = text,
-                    published = "Just now"
+                    published = "Just now",
                 )
                 setResult(RESULT_OK, Intent().putExtra("result_post", resultPost))
                 finish()
