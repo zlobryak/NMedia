@@ -1,11 +1,9 @@
 package ru.netology.nmedia.adapter
 
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
-import androidx.core.net.toUri
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -23,6 +21,7 @@ interface PostListener {
     fun onRemove(post: Post)
     fun onLike(post: Post)
     fun onShare(post: Post)
+    fun onOpenVideo(url: String)
 }
 
 /**
@@ -145,15 +144,19 @@ class PostViewHolder(
                 //Подставляем количество просмотров
                 videoPreviewCount.text = post.videoViewsCount
             }
-            //Создадим интент на открытие ссылки по клику на кнопку
             playArrow.setOnClickListener {
-                val intent = Intent(Intent.ACTION_VIEW, post.videoUrl?.toUri())
-                itemView.context.startActivity(intent)
+                post.videoUrl?.let { url ->
+                    listener.onOpenVideo(url)
+                }
+//                val intent = Intent(Intent.ACTION_VIEW, post.videoUrl?.toUri())
+//                itemView.context.startActivity(intent)
             }
-            //Создадим интент на открытие ссылки по клику на превью
             videoPreview.setOnClickListener {
-                val intent = Intent(Intent.ACTION_VIEW, post.videoUrl?.toUri())
-                itemView.context.startActivity(intent)
+//                val intent = Intent(Intent.ACTION_VIEW, post.videoUrl?.toUri())
+//                itemView.context.startActivity(intent)
+                post.videoUrl?.let { url ->
+                    listener.onOpenVideo(url)
+                }
             }
         }
     }
