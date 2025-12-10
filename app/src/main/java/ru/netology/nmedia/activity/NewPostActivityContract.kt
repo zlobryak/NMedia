@@ -17,7 +17,7 @@ class NewPostActivityContract : ActivityResultContract<Post?, Post?>() {
         resultCode: Int,
         intent: Intent?
     ): Post? = if (resultCode == Activity.RESULT_OK) {
-        intent?.getParcelableExtra("result_post", Post::class.java)
+        intent?.getParcelableExtra("result_post")
     } else {
         null
     }
