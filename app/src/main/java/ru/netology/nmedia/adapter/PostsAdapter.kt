@@ -1,8 +1,11 @@
 package ru.netology.nmedia.adapter
 
+import android.content.Intent
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -105,7 +108,6 @@ class PostViewHolder(
             icShare.setOnClickListener {
                 listener.onShare(post)
             }
-
 //             Обработка нажатия на кнопку меню (три точки) для открытия меню поста
             menuButton.setOnClickListener {
                 PopupMenu(it.context, it).apply {
@@ -132,6 +134,27 @@ class PostViewHolder(
             }
 
             icViews.text = counterFormatter(post.views)
+            // Обработка видео-превью
+            if (!post.videoUrl.isNullOrBlank()) {
+                // Показываем группу с превью, если есть ссылка на видео
+                editGroup.visibility = View.VISIBLE
+                //Ставим заглушку на картинку
+                videoPreview.setImageResource(R.drawable.preview_image)
+                //Подставляем заголовок
+                videoPreviewText.text = post.videoPreviewText
+                //Подставляем количество просмотров
+                videoPreviewCount.text = post.videoViewsCount
+            }
+            //Создадим интент на открытие ссылки по клику на кнопку
+            playArrow.setOnClickListener {
+                val intent = Intent(Intent.ACTION_VIEW, post.videoUrl?.toUri())
+                itemView.context.startActivity(intent)
+            }
+            //Создадим интент на открытие ссылки по клику на превью
+            videoPreview.setOnClickListener {
+                val intent = Intent(Intent.ACTION_VIEW, post.videoUrl?.toUri())
+                itemView.context.startActivity(intent)
+            }
         }
     }
 }
