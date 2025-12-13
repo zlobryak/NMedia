@@ -29,7 +29,7 @@ interface PostListener {
  * Использует ListAdapter и DiffUtil для эффективного обновления данных.
  * Все взаимодействия с пользователем делегируются через единый интерфейс PostListener.
  *
- * @param listener обработчик действий пользователя (лайк, шер, удаление, редактирование)
+ * @param listener обработчик действий пользователя (лайк, шер, удаление, редактирование, запуск видео)
  */
 class PostsAdapter(
     private val listener: PostListener
@@ -143,6 +143,8 @@ class PostViewHolder(
                 videoPreviewText.text = post.videoPreviewText
                 //Подставляем количество просмотров
                 videoPreviewCount.text = post.videoViewsCount
+            } else {
+                editGroup.visibility = View.GONE
             }
             playArrow.setOnClickListener {
                 post.videoUrl?.let { url ->
