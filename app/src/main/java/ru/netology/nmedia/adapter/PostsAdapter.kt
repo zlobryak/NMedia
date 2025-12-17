@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
+import androidx.navigation.fragment.NavHostFragment.Companion.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -160,6 +161,10 @@ class PostViewHolder(
                     listener.onOpenVideo(url)
                 }
             }
+//            content.setOnClickListener {
+//                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+//TODO Нажатие на текст должно открывать фрагмент с постом
+//            }
         }
     }
 }
