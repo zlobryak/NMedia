@@ -36,10 +36,8 @@ class FeedFragment : Fragment() {
                 override fun onEdit(post: Post) {
                     findNavController().navigate(
                         R.id.action_feedFragment_to_newPostFragment,
-                        Bundle().apply { putString("textArg", post.content) }
+                        Bundle().apply { putParcelable("postArg", post) }
                         )
-
-//                    newPostLuncher.launch(post) //Запустим новую активити и передадим в нее пост TODO Переделать на фрагмент (было через контракт на создание активити)
                 }
 
                 override fun onRemove(post: Post) {
