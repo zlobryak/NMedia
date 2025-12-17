@@ -24,19 +24,25 @@ class NewPostFragment : Fragment() {
         val binding = FragmentNewPostBinding.inflate(layoutInflater, container, false)
         val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
 
-        // Получаем пост для редактирования (может быть null — тогда новый)
-//        val editingPost = intent.getParcelableExtra<Post>("post") //TODO Получать пост для редактирования через фрагменты
 
         arguments?.textArg?.let(binding.content::setText)
-        arguments?.postArg
+        arguments?.postArg?.let { binding.content.setText(it.content) }
+        val editPost: Post? = arguments?.postArg
 
         binding.saveButton.setOnClickListener {
             val text = binding.content.text?.toString()?.trim()
-            if (text.isNullOrBlank()) {
+            if (editPost != null) {
+                viewModel.save(
+                    Post(
+                        id = editPost.id,
+                        content = text,
+                        author = editPost.author,
+                        published = editPost.published
+                    )
+                )
                 findNavController().navigateUp()
-                //TODO Показать ошибку и попросить ввод текста
             } else {
-                //TODO Если был получен пост для редактирования, то нужно сохранить уже существующий пост
+                //TODO Пост теперь может быть создан с пустым текстом.
                 viewModel.save(
                     Post(
                         id = 0L, // временный ID для новых
@@ -47,11 +53,6 @@ class NewPostFragment : Fragment() {
                 )
                 findNavController().navigateUp()
             }
-
-//TODO Вставлять текст в content если получен не устой пост
-//            if (editingPost != null) {
-//                binding.content.setText(editingPost.content)
-//            }
         }
         return binding.root
     }
