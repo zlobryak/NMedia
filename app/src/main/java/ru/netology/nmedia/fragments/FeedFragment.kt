@@ -24,7 +24,7 @@ class FeedFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = FragmentFeedBinding.inflate(layoutInflater, container, false)
         // Получаем ViewModel через делегат viewModels (привязан к жизненному циклу Activity)
         val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
@@ -36,8 +36,10 @@ class FeedFragment : Fragment() {
                 override fun onEdit(post: Post) {
                     findNavController().navigate(
                         R.id.action_feedFragment_to_newPostFragment,
-                        Bundle().apply { putParcelable("postArg", post) }
-                        )
+                        Bundle().apply {
+                            putParcelable("postArg", post)
+                        }
+                    )
                 }
 
                 override fun onRemove(post: Post) {
@@ -101,4 +103,5 @@ class FeedFragment : Fragment() {
 
         return binding.root
     }
+
 }

@@ -1,10 +1,11 @@
 package ru.netology.nmedia.adapter
 
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
-import androidx.navigation.fragment.NavHostFragment.Companion.findNavController
+import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -131,6 +132,12 @@ class PostViewHolder(
                     }
                     show()
                 }
+
+                content.setOnClickListener {
+                    findNavController(itemView).navigate(R.id.action_feedFragment_to_postFragment)
+                    Bundle().apply { putParcelable("postArg", post) }
+
+                }
             }
 
             icViews.text = counterFormatter(post.views)
@@ -161,10 +168,15 @@ class PostViewHolder(
                     listener.onOpenVideo(url)
                 }
             }
-//            content.setOnClickListener {
-//                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
-//TODO Нажатие на текст должно открывать фрагмент с постом
-//            }
+
+            content.setOnClickListener {
+                findNavController(itemView).navigate(
+                    R.id.action_feedFragment_to_postFragment,
+                    Bundle().apply {
+                        putParcelable("postArg", post)
+                    }
+                )
+            }
         }
     }
 }
