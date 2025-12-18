@@ -1,7 +1,6 @@
 package ru.netology.nmedia.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +15,11 @@ import ru.netology.nmedia.functions.counterFormatter
 import ru.netology.nmedia.viewmodel.PostViewModel
 import kotlin.getValue
 
-
+/**
+ * Фрагмент для просмотра отдельного поста в полноэкранном или детальном режиме.
+ * Принимает пост через аргумент [postArg] и отображает его содержимое с возможностью взаимодействия:
+ * лайк, репост, редактирование, удаление.
+ */
 class PostFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -24,58 +27,63 @@ class PostFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val binding = FragmentPostBinding.inflate(layoutInflater, container, false)
+
+        // Используем общую ViewModel, привязанную к родительскому фрагменту (для синхронизации с FeedFragment)
         val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
 
-        Log.d("PostFragment", "Arguments: ${arguments}")
-        Log.d("PostFragment", "postArg = ${arguments?.postArg}")
-
+        // Получаем пост, переданный через аргументы навигации
         val postToView = arguments?.postArg
-        if (postToView != null) {
 
+        if (postToView != null) {
+            // Привязываем данные поста к UI-элементам карточки
             with(binding.postCard) {
-                // Установка аватара автора (в данном случае — фиксированная иконка)
+                // Фиксированный аватар автора (в реальном приложении — из URL или профиля)
                 avatar.setImageResource(R.drawable.ic_netology_48dp)
-                // Имя автора поста
+                // Имя автора
                 author.text = postToView.author
-                // Текст поста
+                // Основной текст поста
                 content.text = postToView.content
-                // Время публикации
+                // Время публикации (в формате строки, например "2 ч назад")
                 published.text = postToView.published
-                // Форматированное количество репостов
+
+                // Отображаем форматированное количество репостов (например, "1.2K")
                 icShare.text = counterFormatter(postToView.shareCount)
-                // Установка иконки лайка в зависимости от состояния likedByMe
+
+                // Отображаем состояние лайка: кнопка отмечена, если пользователь уже лайкнул
                 icLikes.isChecked = postToView.likedByMe
-                // Форматированное количество лайков (например, "1K", "2.5M")
+                // Форматированное количество лайков
                 icLikes.text = counterFormatter(postToView.likes)
-                // Обработка нажатия на иконку "лайк"
+
+                // Обработка нажатия на кнопку "лайк" — переключает состояние через ViewModel
                 icLikes.setOnClickListener {
                     viewModel.likeById(postToView.id)
                 }
-                // Обработка нажатия на иконку "поделиться"
+
+                // Обработка нажатия на кнопку "поделиться" — увеличивает счётчик репостов в ViewModel
                 icShare.setOnClickListener {
                     viewModel.shareById(postToView.id)
                 }
-//             Обработка нажатия на кнопку меню (три точки) для открытия меню поста
+
+                // Открытие контекстного меню (редактировать / удалить) по нажатию на "три точки"
                 menuButton.setOnClickListener {
                     PopupMenu(it.context, it).apply {
-                        // Загрузка меню из ресурсов (post_menu.xml)
                         inflate(R.menu.post_menu)
-                        // Обработка выбора пунктов меню
                         setOnMenuItemClickListener { menuItem ->
                             when (menuItem.itemId) {
                                 R.id.remove -> {
+                                    // Удаляем пост по ID
                                     viewModel.removeById(postToView.id)
+                                    // После удаления фрагмент закроется автоматически при возврате
                                     true
                                 }
-
                                 R.id.edit -> {
+                                    // Переход к экрану редактирования с передачей текущего поста
                                     findNavController().navigate(
                                         R.id.action_postFragment_to_newPostFragment,
                                         Bundle().apply { putParcelable("postArg", postToView) }
                                     )
                                     true
                                 }
-
                                 else -> false
                             }
                         }
@@ -85,6 +93,7 @@ class PostFragment : Fragment() {
             }
         }
 
+        // Обработка нажатия на кнопку "Назад" — возврат к предыдущему фрагменту (ленте)
         binding.cancelButton.setOnClickListener { findNavController().navigateUp() }
 
         return binding.root

@@ -18,6 +18,11 @@ import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.viewmodel.PostViewModel
 
+/**
+ * Фрагмент ленты постов.
+ * Отображает список постов, обрабатывает действия пользователя (лайк, шер, редактирование и т.д.)
+ * и управляет навигацией к экрану создания/редактирования поста.
+ */
 class FeedFragment : Fragment() {
 
     override fun onCreateView(
@@ -26,13 +31,17 @@ class FeedFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val binding = FragmentFeedBinding.inflate(layoutInflater, container, false)
-        // Получаем ViewModel через делегат viewModels (привязан к жизненному циклу Activity)
+
+        // Получаем общую ViewModel через parent fragment (для совместного использования с другими дочерними фрагментами)
         val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
 
-
-        // Создаём адаптер RecyclerView и передаём обработчики действий над постами
+        // Создаём адаптер списка постов и реализуем обработчики действий через PostListener
         val adapter = PostsAdapter(
             object : PostListener {
+                /**
+                 * Обработка запроса на редактирование поста.
+                 * Переход к фрагменту создания/редактирования с передачей существующего поста.
+                 */
                 override fun onEdit(post: Post) {
                     findNavController().navigate(
                         R.id.action_feedFragment_to_newPostFragment,
@@ -42,32 +51,45 @@ class FeedFragment : Fragment() {
                     )
                 }
 
+                /**
+                 * Обработка удаления поста — делегирует операцию ViewModel по ID.
+                 */
                 override fun onRemove(post: Post) {
-                    viewModel.removeById(post.id) // Удаляем пост по ID
+                    viewModel.removeById(post.id)
                 }
 
+                /**
+                 * Обработка лайка/дизлайка — передаёт ID поста в ViewModel.
+                 */
                 override fun onLike(post: Post) {
-                    viewModel.likeById(post.id) // Ставим/убираем лайк по ID
+                    viewModel.likeById(post.id)
                 }
 
+                /**
+                 * Обработка действия "Поделиться":
+                 * — сначала фиксируется факт шеринга в ViewModel (для аналитики или увеличения счётчика),
+                 * — затем запускается системный диалог выбора приложения для отправки текста.
+                 */
                 override fun onShare(post: Post) {
-                    viewModel.shareById(post.id) // Фиксируем факт шеринга (в ViewModel)
+                    viewModel.shareById(post.id)
 
-                    // Создаём Intent для шеринга текста поста через системный диалог
                     val intent = Intent()
                         .putExtra(Intent.EXTRA_TEXT, post.content)
                         .setAction(Intent.ACTION_SEND)
                         .setType("text/plain")
 
                     try {
-                        // Запускаем выбор приложения для шеринга
                         startActivity(Intent.createChooser(intent, null))
                     } catch (_: ActivityNotFoundException) {
-                        // Если нет приложений для шеринга — показываем сообщение
-//TODO() Показать сообщение
+                        // TODO: Показать пользователю сообщение об отсутствии приложений для шеринга
+                        // Например, через Snackbar или Toast
                     }
                 }
 
+                /**
+                 * Обработка открытия видео по ссылке.
+                 * Используется стандартный Intent.ACTION_VIEW для запуска внешнего видеоплеера.
+                 */
                 override fun onOpenVideo(url: String) {
                     val intent = Intent(Intent.ACTION_VIEW, url.toUri())
                     startActivity(intent)
@@ -75,8 +97,8 @@ class FeedFragment : Fragment() {
             }
         )
 
-        // Слушатель изменений данных в адаптере:
-        // При добавлении новых элементов в начало списка — плавно прокручиваем к верху
+        // Отслеживаем добавление новых элементов в начало списка:
+        // если новые посты добавлены в позицию 0 — плавно прокручиваем список вверх
         adapter.registerAdapterDataObserver(
             object : RecyclerView.AdapterDataObserver() {
                 override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
@@ -87,21 +109,19 @@ class FeedFragment : Fragment() {
             }
         )
 
-        // Назначаем адаптер списку постов
+        // Привязываем адаптер к RecyclerView
         binding.list.adapter = adapter
 
-        // Наблюдаем за списком постов и обновляем RecyclerView через адаптер
+        // Наблюдаем за изменением списка постов в ViewModel и обновляем UI через submitList
         viewModel.data.observe(viewLifecycleOwner) { posts ->
             adapter.submitList(posts)
         }
 
-        // Обработчик нажатия на кнопку "Добавить пост" — запускает NewPostActivity
+        // Обработка нажатия на FAB (кнопку "Новый пост") — переход к экрану создания поста без аргументов
         binding.addButton.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
 
-
         return binding.root
     }
-
 }

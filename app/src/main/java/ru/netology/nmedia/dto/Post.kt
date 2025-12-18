@@ -17,5 +17,5 @@ data class Post(
     val videoUrl: String? = null,
     val previewImageUrl: String? = null,
     val videoPreviewText: String? = null,
-    val videoViewsCount: String? = null
+    val videoViewsCount: Int? = null
 ) : Parcelable
