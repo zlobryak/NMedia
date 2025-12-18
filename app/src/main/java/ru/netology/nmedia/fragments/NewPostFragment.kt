@@ -14,6 +14,12 @@ import ru.netology.nmedia.utils.PostArg
 import ru.netology.nmedia.viewmodel.PostViewModel
 import kotlin.getValue
 
+/**
+ * Фрагмент для создания нового поста или редактирования существующего.
+ * Определяет режим работы по переданным аргументам:
+ * - если передан [Post] через [postArg] — работает в режиме редактирования,
+ * - если передан только [textArg] или аргументы отсутствуют — создаёт новый пост.
+ */
 class NewPostFragment : Fragment() {
 
     override fun onCreateView(
@@ -22,16 +28,25 @@ class NewPostFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val binding = FragmentNewPostBinding.inflate(layoutInflater, container, false)
+
+        // Используем ViewModel, общую для всех дочерних фрагментов (через родительский фрагмент)
         val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
 
-
+        // Предзаполняем поле текста, если передан аргумент textArg (например, при "Поделиться")
         arguments?.textArg?.let(binding.content::setText)
+
+        // Или, если передан целый пост (режим редактирования) — подставляем его содержимое
         arguments?.postArg?.let { binding.content.setText(it.content) }
+
+        // Сохраняем ссылку на редактируемый пост (если есть), чтобы отличать режим редактирования от создания
         val editPost: Post? = arguments?.postArg
 
+        // Обработка нажатия на кнопку "Сохранить"
         binding.saveButton.setOnClickListener {
             val text = binding.content.text?.toString()?.trim()
+
             if (editPost != null) {
+                // Режим редактирования: обновляем существующий пост, сохраняя его ID и метаданные
                 viewModel.save(
                     Post(
                         id = editPost.id,
@@ -40,13 +55,17 @@ class NewPostFragment : Fragment() {
                         published = editPost.published
                     )
                 )
+                // Возвращаемся назад в ленту
                 findNavController().navigateUp()
             } else {
-                //TODO Пост теперь может быть создан с пустым текстом.
+                // Режим создания нового поста:
+                // — временный ID (0L) будет заменён в репозитории или ViewModel,
+                // — автор и время публикации задаются заглушками (в реальном приложении — из профиля и текущего времени).
+                // TODO: Добавить валидацию — запретить создание поста с пустым или пробельным текстом
                 viewModel.save(
                     Post(
-                        id = 0L, // временный ID для новых
-                        author = "Me", // или брать из профиля
+                        id = 0L,
+                        author = "Me",
                         content = text,
                         published = "Just now",
                     )
@@ -54,12 +73,16 @@ class NewPostFragment : Fragment() {
                 findNavController().navigateUp()
             }
         }
+
         return binding.root
     }
 
+    /**
+     * Расширения для безопасной и удобной работы с аргументами Bundle.
+     * Позволяют обращаться к аргументам как к свойствам через делегаты (StringArg, PostArg).
+     */
     companion object {
         var Bundle.textArg: String? by StringArg
         var Bundle.postArg: Post? by PostArg
     }
-
 }
