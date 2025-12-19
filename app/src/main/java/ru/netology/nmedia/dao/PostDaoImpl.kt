@@ -14,8 +14,13 @@ class PostDaoImpl(private val db: SQLiteDatabase) : PostDao {
             ${PostColumns.COLUMN_CONTENT} TEXT NOT NULL,
             ${PostColumns.COLUMN_PUBLISHED} TEXT NOT NULL,
             ${PostColumns.COLUMN_LIKED_BY_ME} BOOLEAN NOT NULL DEFAULT 0,
-            ${PostColumns.COLUMN_LIKES} INTEGER NOT NULL DEFAULT 0
-            ${PostColumns.COLUMN_SHARED} INTEGER NOT NULL DEFAULT 0
+            ${PostColumns.COLUMN_LIKES} INTEGER NOT NULL DEFAULT 0,
+            ${PostColumns.COLUMN_SHARED} INTEGER NOT NULL DEFAULT 0,
+            ${PostColumns.COLUMN_VIEWS} INTEGER NOT NULL DEFAULT 0,
+            ${PostColumns.COLUMN_VIDEO_URL} TEXT,
+            ${PostColumns.COLUMN_PREVIEW_IMAGE_URL} TEXT,
+            ${PostColumns.COLUMN_PREVIEW_VIDEO_TEXT} TEXT,
+            ${PostColumns.COLUMN_VIDEO_VIEWS} INTEGER NOT NULL DEFAULT 0            
         );
         """.trimIndent()
     }
@@ -120,7 +125,13 @@ class PostDaoImpl(private val db: SQLiteDatabase) : PostDao {
     }
 
     override fun shareById(id: Long) {
-        TODO("Not yet implemented")
+        db.execSQL(
+            """
+           UPDATE posts SET
+               shared = likes + 1
+           WHERE id = ?;
+        """.trimIndent(), arrayOf(id)
+        )
     }
 
     private fun map(cursor: Cursor): Post {
