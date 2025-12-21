@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.PostListener
 import ru.netology.nmedia.adapter.PostsAdapter
@@ -81,8 +82,12 @@ class FeedFragment : Fragment() {
                     try {
                         startActivity(Intent.createChooser(intent, null))
                     } catch (_: ActivityNotFoundException) {
-                        // TODO: Показать пользователю сообщение об отсутствии приложений для шеринга
-                        // Например, через Snackbar или Toast
+                        Snackbar.make(
+                            binding.root,
+                            getString(R.string.no_app_found),
+                            Snackbar.LENGTH_SHORT
+                        ).show()
+
                     }
                 }
 
