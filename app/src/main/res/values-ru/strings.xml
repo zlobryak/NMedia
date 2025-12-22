@@ -22,4 +22,5 @@
     <string name="vide_preview">Предпросмотр видео</string>
     <string name="views_icon">Иконка просмотров</string>
     <string name="play_button">Кнопка пуск</string>
+    <string name="no_app_found">Приложение не найдено</string>
 </resources>
