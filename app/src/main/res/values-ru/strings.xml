@@ -24,4 +24,5 @@
     <string name="play_button">Кнопка пуск</string>
     <string name="no_app_found">Приложение не найдено</string>
     <string name="google_play_unavailable">Сервисы Гугл плей недоступны</string>
+    <string name="notification_user_liked">Пользователь %1$s поставил лайкпосту автора %2$s\'s</string>
 </resources>
