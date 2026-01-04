@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -12,6 +13,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
 import ru.netology.nmedia.R
+import kotlin.enumValues
 
 class FCMService : FirebaseMessagingService() {
     private val action = "action"
@@ -34,11 +36,20 @@ class FCMService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
-        message.data[action]?.let {
-            when (Action.valueOf(it)) {
-                Action.LIKE -> handleLike(gson.fromJson(message.data[content], Like::class.java))
-            }
+        val actionStr = message.data[action] ?: run {
+            Log.w("FCMService", "No 'action' field in message")
+            return
         }
+
+        val actionEnum = enumValues<Action>().find { it.name == actionStr }
+
+        when (actionEnum) {
+            Action.LIKE -> handleLike(gson.fromJson(message.data[content], Like::class.java))
+            null ->
+                // Логируем неизвестное действие
+                Log.w("FCMService", "Unknown action: $actionStr")
+        }
+
     }
 
     private fun handleLike(like: Like) {
