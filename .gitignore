@@ -47,3 +47,4 @@ captures/
 ### Gradle ###
 !gradle/wrapper/gradle-wrapper.jar
 /.idea/
+app/google-services.json
