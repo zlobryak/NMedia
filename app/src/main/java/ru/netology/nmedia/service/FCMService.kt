@@ -13,6 +13,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
 import ru.netology.nmedia.R
+import ru.netology.nmedia.dto.Post
 import kotlin.enumValues
 
 class FCMService : FirebaseMessagingService() {
@@ -20,6 +21,8 @@ class FCMService : FirebaseMessagingService() {
     private val content = "content"
     private val channelId = "remote"
     private val gson = Gson()
+
+    private var notificationId = 1
 
     override fun onCreate() {
         super.onCreate()
@@ -45,11 +48,34 @@ class FCMService : FirebaseMessagingService() {
 
         when (actionEnum) {
             Action.LIKE -> handleLike(gson.fromJson(message.data[content], Like::class.java))
+            //При получении сообщения с пометкой "NewPost" передадим в метод handleNewPost полученный пост
+            Action.NewPost -> handleNewPost(gson.fromJson(message.data[content], Post::class.java))
             null ->
                 // Логируем неизвестное действие
                 Log.w("FCMService", "Unknown action: $actionStr")
         }
 
+    }
+
+    private fun handleNewPost(post: Post) {
+        Log.w("FCMService", "handleNewPost: $post")
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(
+                getString(R.string.author_of_new_post_push_notification_title, post.author)
+            )
+            .setContentText(post.content)
+        .setStyle(NotificationCompat.BigTextStyle()
+            .bigText(post.content))
+            .build()
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            NotificationManagerCompat.from(this).notify(notificationId++, notification)
+        }
     }
 
     private fun handleLike(like: Like) {
@@ -65,7 +91,7 @@ class FCMService : FirebaseMessagingService() {
                 Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            NotificationManagerCompat.from(this).notify(1, notification)
+            NotificationManagerCompat.from(this).notify(notificationId++, notification)
         }
     }
 
@@ -76,6 +102,7 @@ class FCMService : FirebaseMessagingService() {
 
 enum class Action {
     LIKE,
+    NewPost,
 }
 
 data class Like(
