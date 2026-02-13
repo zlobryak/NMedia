@@ -37,9 +37,9 @@ class PostFragment : Fragment() {
         // Получаем пост, переданный через аргументы навигации
         val currentPostId = arguments?.postArg?.id
 
-        //Подпишемся на обновления и заполним элементы отображения данными
-        viewModel.data.observe(viewLifecycleOwner) { posts ->
-            // Находим актуальный пост по ID
+        //Подпишемся на обновления и заполним элементы отображения данными (сейчас только список постов, без лайф дата)
+        val posts = viewModel.data
+
             val currentPost = posts.find { it.id == currentPostId }
 
             if (currentPost != null) {
@@ -123,7 +123,7 @@ class PostFragment : Fragment() {
                     }
                 }
             }
-        }
+
 
         // Обработка нажатия на кнопку "Назад" — возврат к предыдущему фрагменту (ленте)
         binding.cancelButton.setOnClickListener { findNavController().navigateUp() }

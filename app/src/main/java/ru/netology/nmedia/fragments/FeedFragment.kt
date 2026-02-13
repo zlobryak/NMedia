@@ -118,9 +118,10 @@ class FeedFragment : Fragment() {
         binding.list.adapter = adapter
 
         // Наблюдаем за изменением списка постов в ViewModel и обновляем UI через submitList
-        viewModel.data.observe(viewLifecycleOwner) { posts ->
-            adapter.submitList(posts)
-        }
+        // Временно работаем без обсерва в рамках kекции TODO
+
+            adapter.submitList(viewModel.data)
+
 
         // Обработка нажатия на FAB (кнопку "Новый пост") — переход к экрану создания поста без аргументов
         binding.addButton.setOnClickListener {

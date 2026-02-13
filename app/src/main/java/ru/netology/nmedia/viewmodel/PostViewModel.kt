@@ -2,7 +2,6 @@ package ru.netology.nmedia.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
@@ -10,7 +9,6 @@ import ru.netology.nmedia.repository.PostRepositoryImpl
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: PostRepository = PostRepositoryImpl(
-        AppDb.getInstance(application).postDao
     )
     val data = repository.getAll()
 
