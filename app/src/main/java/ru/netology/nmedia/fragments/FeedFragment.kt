@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.net.toUri
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -118,10 +119,15 @@ class FeedFragment : Fragment() {
         binding.list.adapter = adapter
 
         // Наблюдаем за изменением списка постов в ViewModel и обновляем UI через submitList
-        // Временно работаем без обсерва в рамках kекции TODO
+        viewModel.data.observe(viewLifecycleOwner) { state ->
+            adapter.submitList(state.posts)
+            binding.progress.isVisible = state.loading
+            binding.errorGroup.isVisible = state.error
+            binding.empty.isVisible = state.empty
+        }
 
-            adapter.submitList(viewModel.data)
-
+        // Обработаем нажатие на кнопку повторить
+        binding.retry.setOnClickListener { viewModel.load() }
 
         // Обработка нажатия на FAB (кнопку "Новый пост") — переход к экрану создания поста без аргументов
         binding.addButton.setOnClickListener {

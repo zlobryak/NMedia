@@ -38,9 +38,9 @@ class PostFragment : Fragment() {
         val currentPostId = arguments?.postArg?.id
 
         //Подпишемся на обновления и заполним элементы отображения данными (сейчас только список постов, без лайф дата)
-        val posts = viewModel.data
+        viewModel.data.observe(viewLifecycleOwner) { state ->
 
-            val currentPost = posts.find { it.id == currentPostId }
+            val currentPost = state.posts.find { it.id == currentPostId }
 
             if (currentPost != null) {
                 // Привязываем данные поста к UI-элементам карточки
@@ -123,6 +123,7 @@ class PostFragment : Fragment() {
                     }
                 }
             }
+        }
 
 
         // Обработка нажатия на кнопку "Назад" — возврат к предыдущему фрагменту (ленте)

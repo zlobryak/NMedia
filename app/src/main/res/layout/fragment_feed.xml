@@ -34,7 +34,6 @@
         android:id="@+id/empty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/gray"
         android:padding="@dimen/common_spacing"
         android:text="@string/no_posts"
         android:visibility="gone"
