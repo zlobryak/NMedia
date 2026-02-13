@@ -8,6 +8,7 @@ import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
+import ru.netology.nmedia.utils.SingleLiveEvent
 import kotlin.concurrent.thread
 
 
@@ -17,6 +18,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val _data = MutableLiveData(FeedModel())
     val data: LiveData<FeedModel>
         get() = _data
+    private val _postCreated = SingleLiveEvent<Unit>()
+    val postCreated: LiveData<Unit>
+        get() = _postCreated
+
 
     init {
         load()
@@ -31,9 +36,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             } catch (_: Exception) {
                 FeedModel()
             }
-
             _data.postValue(result)
-
         }
     }
 
@@ -41,6 +44,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun shareById(id: Long) = repository.shareById(id)
     fun removeById(id: Long) = repository.removeById(id)
     fun save(post: Post) {
-        repository.save(post)
+        thread {
+            repository.save(post)
+            _postCreated.postValue(Unit)
+        }
     }
 }
