@@ -64,7 +64,7 @@ class FeedFragment : Fragment() {
                  * Обработка лайка/дизлайка — передаёт ID поста в ViewModel.
                  */
                 override fun onLike(post: Post) {
-                    viewModel.likeById(post.id)
+                    viewModel.likeById(post)
                 }
 
                 /**
@@ -72,6 +72,7 @@ class FeedFragment : Fragment() {
                  * — сначала фиксируется факт шеринга в ViewModel (для аналитики или увеличения счётчика),
                  * — затем запускается системный диалог выбора приложения для отправки текста.
                  */
+                //TODO не работает с текущим сервером
                 override fun onShare(post: Post) {
                     viewModel.shareById(post.id)
 

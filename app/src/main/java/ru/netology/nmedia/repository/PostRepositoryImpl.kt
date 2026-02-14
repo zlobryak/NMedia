@@ -35,8 +35,32 @@ class PostRepositoryImpl(
         return gson.fromJson(jsonResponse, postsType)
     }
 
-    override fun likeById(id: Long): Post {
-        TODO("Not yet implemented")
+    override fun likeById(post: Post): Post {
+        // POST /api/posts/{id}/likes
+        // DELETE /api/posts/{id}/likes
+        val request = Request.Builder()
+            .url("$BASE_URL/api/slow/posts/${post.id}/likes")
+            .post(gson.toJson(post).toRequestBody(jsonType))
+            .build()
+        val call = client.newCall(request)
+        val response = call.execute()
+        val jsonResponse = response.body.string()
+        return gson.fromJson(jsonResponse, Post::class.java)
+
+    }
+
+    override fun disLikeById(post: Post): Post {
+        // POST /api/posts/{id}/likes
+        // DELETE /api/posts/{id}/likes
+        val request = Request.Builder()
+            .url("$BASE_URL/api/slow/posts/${post.id}/likes")
+            .delete()
+            .build()
+        val call = client.newCall(request)
+        val response = call.execute()
+        val jsonResponse = response.body.string()
+        return gson.fromJson(jsonResponse, Post::class.java)
+
     }
 
     override fun shareById(id: Long): Post {

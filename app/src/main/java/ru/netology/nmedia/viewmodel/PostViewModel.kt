@@ -40,13 +40,51 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun likeById(id: Long) = repository.likeById(id)
+    fun likeById(post: Post) {
+        thread {
+            val currentPosts = _data.value?.posts ?: emptyList()
+            //Попробуем отправить изменения на сервер
+            try {
+                _data.postValue(FeedModel(loading = true))
+                val updatedPost = if (post.likedByMe) {
+                    repository.disLikeById(post)
+                } else {
+                    repository.likeById(post)
+                }
+                // Синхронизация с фактическим результатом из репозитория
+                val updatedPosts = currentPosts.map { post ->
+                    if (post.id == updatedPost.id) updatedPost else post
+                }
+                _data.postValue(FeedModel(posts = updatedPosts, empty = updatedPosts.isEmpty()))
+            } catch (_: Exception) {
+                //В случае ошибки вернем как старый список постов и покажем ошибку
+                _data.postValue(FeedModel(posts = currentPosts, error = true))
+            }
+        }
+    }
+
+    //Не работает с текущим сервером
     fun shareById(id: Long) = repository.shareById(id)
-    fun removeById(id: Long) = repository.removeById(id)
+    fun removeById(id: Long) {
+        thread {
+            val currentPosts = _data.value?.posts ?: emptyList()
+            try {
+                repository.removeById(id)
+                load()
+            }catch (_: Exception) {
+                //В случае ошибки вернем как старый список постов и покажем ошибку
+                _data.postValue(FeedModel(posts = currentPosts, error = true))
+            }
+        }
+    }
+
     fun save(post: Post) {
+        //TODO сейчас можно успеть несколько раз нажать на кнопку доварить, получив несколько одинаковых постов
         thread {
             repository.save(post)
             _postCreated.postValue(Unit)
         }
     }
 }
+
+

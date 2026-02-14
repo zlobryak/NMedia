@@ -71,7 +71,7 @@ class PostFragment : Fragment() {
                 with(binding.postCard) {
                     // Обработка нажатия на кнопку "лайк" — переключает состояние через ViewModel
                     icLikes.setOnClickListener {
-                        viewModel.likeById(currentPost.id)
+                        viewModel.likeById(currentPost)
                     }
 
                     // Обработка нажатия на кнопку "поделиться" — увеличивает счётчик репостов в ViewModel
