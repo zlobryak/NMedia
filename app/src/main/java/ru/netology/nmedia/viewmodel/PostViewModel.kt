@@ -22,12 +22,17 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val postCreated: LiveData<Unit>
         get() = _postCreated
 
+    private val _refreshing = MutableLiveData(false)
+    val refreshing: LiveData<Boolean> = _refreshing
+
 
     init {
         load()
     }
 
-    fun load() {
+    fun load(fromRefresh: Boolean = false) {
+        if (fromRefresh) _refreshing.value = true // Только для свайпа
+
         thread {
             _data.postValue(FeedModel(loading = true))
             val result = try {
@@ -38,7 +43,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
             _data.postValue(result)
         }
+
+        if (fromRefresh) _refreshing.value = false // Сброс только для свайпа
     }
+
 
     fun likeById(post: Post) {
         thread {

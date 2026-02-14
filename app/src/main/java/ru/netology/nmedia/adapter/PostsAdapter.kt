@@ -125,6 +125,8 @@ class PostViewHolder(
                 }
             }
 
+
+
             // Обработка клика по основному контенту поста — переход на отдельный экран поста
             content.setOnClickListener {
                 findNavController(itemView).navigate(

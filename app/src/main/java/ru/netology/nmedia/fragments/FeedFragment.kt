@@ -135,6 +135,19 @@ class FeedFragment : Fragment() {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
 
+        // Настройка SwipeRefreshLayout
+        binding.swiperefresh.setOnRefreshListener {
+            viewModel.load(fromRefresh = true)
+        }
+
+        // Синхронизация состояния обновления
+        viewModel.refreshing.observe(viewLifecycleOwner) { isRefreshing ->
+            binding.swiperefresh.isRefreshing = isRefreshing
+        }
+
+        // Первоначальная загрузка БЕЗ индикатора свайпа
+        viewModel.load(fromRefresh = false)
+
         return binding.root
     }
 }

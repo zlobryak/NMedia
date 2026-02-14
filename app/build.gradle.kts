@@ -73,6 +73,6 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation(libs.play.services)
     coreLibraryDesugaring(libs.desugaring)
-    // Source: https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
     implementation(libs.okhttp)
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0")
 }
