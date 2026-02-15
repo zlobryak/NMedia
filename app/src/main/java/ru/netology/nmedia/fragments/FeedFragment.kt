@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.net.toUri
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -63,7 +64,7 @@ class FeedFragment : Fragment() {
                  * Обработка лайка/дизлайка — передаёт ID поста в ViewModel.
                  */
                 override fun onLike(post: Post) {
-                    viewModel.likeById(post.id)
+                    viewModel.likeById(post)
                 }
 
                 /**
@@ -71,6 +72,7 @@ class FeedFragment : Fragment() {
                  * — сначала фиксируется факт шеринга в ViewModel (для аналитики или увеличения счётчика),
                  * — затем запускается системный диалог выбора приложения для отправки текста.
                  */
+                //TODO не работает с текущим сервером
                 override fun onShare(post: Post) {
                     viewModel.shareById(post.id)
 
@@ -118,14 +120,33 @@ class FeedFragment : Fragment() {
         binding.list.adapter = adapter
 
         // Наблюдаем за изменением списка постов в ViewModel и обновляем UI через submitList
-        viewModel.data.observe(viewLifecycleOwner) { posts ->
-            adapter.submitList(posts)
+        viewModel.data.observe(viewLifecycleOwner) { state ->
+            adapter.submitList(state.posts)
+            binding.progress.isVisible = state.loading
+            binding.errorGroup.isVisible = state.error
+            binding.empty.isVisible = state.empty
         }
+
+        // Обработаем нажатие на кнопку повторить
+        binding.retry.setOnClickListener { viewModel.load() }
 
         // Обработка нажатия на FAB (кнопку "Новый пост") — переход к экрану создания поста без аргументов
         binding.addButton.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
+
+        // Настройка SwipeRefreshLayout
+        binding.swiperefresh.setOnRefreshListener {
+            viewModel.load(fromRefresh = true)
+        }
+
+        // Синхронизация состояния обновления
+        viewModel.refreshing.observe(viewLifecycleOwner) { isRefreshing ->
+            binding.swiperefresh.isRefreshing = isRefreshing
+        }
+
+        // Первоначальная загрузка БЕЗ индикатора свайпа
+        viewModel.load(fromRefresh = false)
 
         return binding.root
     }

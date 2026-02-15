@@ -67,27 +67,33 @@ class NewPostFragment : Fragment() {
                         published = editPost.published
                     )
                 )
-                // Возвращаемся назад в ленту
-                findNavController().navigateUp()
+                // Раньше сразу возвращались в ленту, сейчас ждем создания поста на сервере
+//                findNavController().navigateUp()
             } else {
                 // Режим создания нового поста:
                 // — временный ID (0L) будет заменён в репозитории или ViewModel,
                 // — автор и время публикации задаются заглушками (в реальном приложении — из профиля и текущего времени).
-                // TODO: Добавить валидацию — запретить создание поста с пустым или пробельным текстом
                 viewModel.save(
                     Post(
                         id = 0L,
                         author = "Me",
                         content = text,
-                        published = "Just now",
+                        published = "1",
                     )
                 )
                 // Удаляем черновик после успешного сохранения (только в режиме создания)
-                sharedPreferences?.edit{ remove(DRAFT_KEY) }
-
-                findNavController().navigateUp()
+                sharedPreferences?.edit { remove(DRAFT_KEY) }
+                //раньше сразу возвращались в ленту, сейчас ждем создания поста на сервере
+                //findNavController().navigateUp()
             }
         }
+
+        //Наблюдаем за появлением нового поста и только после этого возвращаемся в ленту
+        viewModel.postCreated.observe(viewLifecycleOwner) {
+            viewModel.load() //В тоже время запросим новые посты
+            findNavController().navigateUp()
+        }
+
         val onBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 val draftText = binding.content.text?.toString()?.trim()

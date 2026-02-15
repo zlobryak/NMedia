@@ -26,4 +26,7 @@
     <string name="google_play_unavailable">Сервисы Гугл плей недоступны</string>
     <string name="notification_user_liked">Пользователь %1$s поставил лайкпосту автора %2$s</string>
     <string name="author_of_new_post_push_notification_title">Пользователь %1$s опубликовал новый пост:</string>
+    <string name="no_posts">Нет постов</string>
+    <string name="network_error">Ошибка сети</string>
+    <string name="retry">Повторить</string>
 </resources>

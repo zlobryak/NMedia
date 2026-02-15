@@ -34,6 +34,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            manifestPlaceholders["usesCleartextTraffic"] = false
+        }
+        debug {
+            manifestPlaceholders["usesCleartextTraffic"] = true
+
         }
     }
     compileOptions {
@@ -68,4 +73,6 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation(libs.play.services)
     coreLibraryDesugaring(libs.desugaring)
+    implementation(libs.okhttp)
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0")
 }

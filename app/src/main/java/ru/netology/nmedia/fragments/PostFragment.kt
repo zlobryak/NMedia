@@ -37,10 +37,10 @@ class PostFragment : Fragment() {
         // Получаем пост, переданный через аргументы навигации
         val currentPostId = arguments?.postArg?.id
 
-        //Подпишемся на обновления и заполним элементы отображения данными
-        viewModel.data.observe(viewLifecycleOwner) { posts ->
-            // Находим актуальный пост по ID
-            val currentPost = posts.find { it.id == currentPostId }
+        //Подпишемся на обновления и заполним элементы отображения данными (сейчас только список постов, без лайф дата)
+        viewModel.data.observe(viewLifecycleOwner) { state ->
+
+            val currentPost = state.posts.find { it.id == currentPostId }
 
             if (currentPost != null) {
                 // Привязываем данные поста к UI-элементам карточки
@@ -71,7 +71,7 @@ class PostFragment : Fragment() {
                 with(binding.postCard) {
                     // Обработка нажатия на кнопку "лайк" — переключает состояние через ViewModel
                     icLikes.setOnClickListener {
-                        viewModel.likeById(currentPost.id)
+                        viewModel.likeById(currentPost)
                     }
 
                     // Обработка нажатия на кнопку "поделиться" — увеличивает счётчик репостов в ViewModel
@@ -124,6 +124,7 @@ class PostFragment : Fragment() {
                 }
             }
         }
+
 
         // Обработка нажатия на кнопку "Назад" — возврат к предыдущему фрагменту (ленте)
         binding.cancelButton.setOnClickListener { findNavController().navigateUp() }
