@@ -56,7 +56,8 @@ class PostRepositoryImpl(
                 override fun onResponse(call: Call, response: Response) {
                     val body = response.body.string()
                     try {
-                        val posts: List<Post> = gson.fromJson(body, postsType)
+                        val posts: List<Post> =
+                            gson.fromJson(body, postsType) //Вынес в переменную ради логов
                         callback.onSuccess(gson.fromJson(body, postsType))
                         Log.d("PostRepository", "Полученные посты: $posts")
                     } catch (e: Exception) {
@@ -67,29 +68,60 @@ class PostRepositoryImpl(
             )
     }
 
-    override fun likeById(post: Post): Post {
-        // POST /api/posts/{id}/likes
-        // DELETE /api/posts/{id}/likes
+    override fun likeById(post: Post, callback: PostRepository.LikedByIdCallback) {
         val request = Request.Builder()
             .url("$BASE_URL/api/slow/posts/${post.id}/likes")
             .post(gson.toJson(post).toRequestBody(jsonType))
             .build()
-        val call = client.newCall(request)
-        val response = call.execute()
-        val jsonResponse = response.body.string()
-        return gson.fromJson(jsonResponse, Post::class.java)
+        client.newCall(request)
+            .enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    Log.e("PostRepository", "Ошибка likeByID")
+                    callback.onError(e)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    try {
+                        callback.onSuccess(
+                            gson.fromJson(
+                                response.body.string(),
+                                Post::class.java
+                            )
+                        )
+                    } catch (e: Exception) {
+                        callback.onError(e)
+                    }
+                }
+            })
+
 
     }
 
-    override fun disLikeById(post: Post): Post {
+    override fun disLikeById(post: Post, callback: PostRepository.LikedByIdCallback) {
         val request = Request.Builder()
             .url("$BASE_URL/api/slow/posts/${post.id}/likes")
             .delete()
             .build()
-        val call = client.newCall(request)
-        val response = call.execute()
-        val jsonResponse = response.body.string()
-        return gson.fromJson(jsonResponse, Post::class.java)
+        client.newCall(request)
+            .enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    Log.e("PostRepository", "Ошибка likeByID")
+                    callback.onError(e)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    try {
+                        callback.onSuccess(
+                            gson.fromJson(
+                                response.body.string(),
+                                Post::class.java
+                            )
+                        )
+                    } catch (e: Exception) {
+                        callback.onError(e)
+                    }
+                }
+            })
 
     }
 

@@ -25,13 +25,14 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val _refreshing = MutableLiveData(false)
     val refreshing: LiveData<Boolean> = _refreshing
 
-
     init {
         load()
     }
 
     fun load(fromRefresh: Boolean = false) {
         if (fromRefresh) _refreshing.value = true // Только для свайпа
+
+        _data.postValue(FeedModel(loading = true))
 
         repository.getAllAsync(object : PostRepository.GetAllCallback {
             override fun onSuccess(posts: List<Post>) {
@@ -42,42 +43,46 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _data.postValue(FeedModel(error = true))
             }
         })
-        _data.postValue(FeedModel(loading = true))
-        val result = try {
-            val posts = repository.getAll()
-            FeedModel(posts = posts, empty = posts.isEmpty())
-        } catch (_: Exception) {
-            FeedModel()
-        }
-        _data.postValue(result)
-
-
         if (fromRefresh) _refreshing.value = false // Сброс только для свайпа
     }
 
 
     fun likeById(post: Post) {
-        thread {
-            val currentPosts = _data.value?.posts ?: emptyList()
-            //Попробуем отправить изменения на сервер
-            try {
-                _data.postValue(FeedModel(loading = true))
-                val updatedPost = if (post.likedByMe) {
-                    repository.disLikeById(post)
-                } else {
-                    repository.likeById(post)
+        val currentPosts = _data.value?.posts ?: emptyList()
+
+        if (post.likedByMe) {
+            _data.postValue(FeedModel(loading = true))
+
+            repository.disLikeById(post, object : PostRepository.LikedByIdCallback {
+
+                override fun onSuccess(post: Post) {
+                    val updatedPosts = currentPosts.map { currentPost ->
+                        if (currentPost.id == post.id) post else currentPost
+                    }
+                    _data.postValue(FeedModel(posts = updatedPosts, empty = updatedPosts.isEmpty()))
                 }
-                // Синхронизация с фактическим результатом из репозитория
-                val updatedPosts = currentPosts.map { post ->
-                    if (post.id == updatedPost.id) updatedPost else post
+
+                override fun onError(e: Exception) {
+                    _data.postValue(FeedModel(posts = currentPosts, error = true))
                 }
-                _data.postValue(FeedModel(posts = updatedPosts, empty = updatedPosts.isEmpty()))
-            } catch (_: Exception) {
-                //В случае ошибки вернем как старый список постов и покажем ошибку
-                _data.postValue(FeedModel(posts = currentPosts, error = true))
-            }
+            })
+        } else {
+            _data.postValue(FeedModel(loading = true))
+            repository.likeById(post, object : PostRepository.LikedByIdCallback {
+                override fun onSuccess(post: Post) {
+                    val updatedPosts = currentPosts.map { currentPost ->
+                        if (currentPost.id == post.id) post else currentPost
+                    }
+                    _data.postValue(FeedModel(posts = updatedPosts, empty = updatedPosts.isEmpty()))
+                }
+
+                override fun onError(e: Exception) {
+                    _data.postValue(FeedModel(posts = currentPosts, error = true))
+                }
+            })
         }
     }
+
 
     //Не работает с текущим сервером
     fun shareById(id: Long) = repository.shareById(id)
@@ -101,6 +106,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             _postCreated.postValue(Unit)
         }
     }
+
+
 }
 
 
