@@ -1,11 +1,16 @@
 package ru.netology.nmedia.repository
 
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import okhttp3.Call
+import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
+import okio.IOException
 import ru.netology.nmedia.dto.Post
 import java.util.concurrent.TimeUnit
 
@@ -17,7 +22,6 @@ class PostRepositoryImpl(
         .build()
 
     private val gson = Gson()
-
     private val postsType = object : TypeToken<List<Post>>() {}.type
 
     private companion object {
@@ -29,10 +33,38 @@ class PostRepositoryImpl(
         val request = Request.Builder()
             .url("$BASE_URL/api/slow/posts")
             .build()
-        val call = client.newCall(request)
-        val response = call.execute()
-        val jsonResponse = response.body.string()
-        return gson.fromJson(jsonResponse, postsType)
+        return gson.fromJson(
+            client.newCall(request)
+                .execute()
+                .body.string(),
+            postsType
+        )
+    }
+
+    override fun getAllAsync(callback: PostRepository.GetAllCallback) {
+        Log.d("PostRepository", "Запрос списка постов инициирован асинхронным методом")
+        val request = Request.Builder()
+            .url("$BASE_URL/api/slow/posts")
+            .build()
+        client.newCall(request)
+            .enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    Log.e("PostRepository", "Ошибка загрузки")
+                    callback.onError(e)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    val body = response.body.string()
+                    try {
+                        val posts: List<Post> = gson.fromJson(body, postsType)
+                        callback.onSuccess(gson.fromJson(body, postsType))
+                        Log.d("PostRepository", "Полученные посты: $posts")
+                    } catch (e: Exception) {
+                        callback.onError(e)
+                    }
+                }
+            }
+            )
     }
 
     override fun likeById(post: Post): Post {
@@ -50,8 +82,6 @@ class PostRepositoryImpl(
     }
 
     override fun disLikeById(post: Post): Post {
-        // POST /api/posts/{id}/likes
-        // DELETE /api/posts/{id}/likes
         val request = Request.Builder()
             .url("$BASE_URL/api/slow/posts/${post.id}/likes")
             .delete()

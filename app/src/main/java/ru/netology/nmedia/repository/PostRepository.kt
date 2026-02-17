@@ -9,4 +9,11 @@ interface PostRepository {
     fun removeById(id: Long)
     fun save (post: Post): Post
     fun disLikeById(post: Post): Post
+
+    fun getAllAsync(callback: GetAllCallback)
+
+    interface GetAllCallback {
+        fun onSuccess(posts: List<Post>) {}
+        fun onError(e: Exception) {}
+    }
 }

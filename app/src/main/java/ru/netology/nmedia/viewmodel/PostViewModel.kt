@@ -33,16 +33,24 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun load(fromRefresh: Boolean = false) {
         if (fromRefresh) _refreshing.value = true // Только для свайпа
 
-        thread {
-            _data.postValue(FeedModel(loading = true))
-            val result = try {
-                val posts = repository.getAll()
-                FeedModel(posts = posts, empty = posts.isEmpty())
-            } catch (_: Exception) {
-                FeedModel()
+        repository.getAllAsync(object : PostRepository.GetAllCallback {
+            override fun onSuccess(posts: List<Post>) {
+                _data.postValue(FeedModel(posts = posts, empty = posts.isEmpty()))
             }
-            _data.postValue(result)
+
+            override fun onError(e: Exception) {
+                _data.postValue(FeedModel(error = true))
+            }
+        })
+        _data.postValue(FeedModel(loading = true))
+        val result = try {
+            val posts = repository.getAll()
+            FeedModel(posts = posts, empty = posts.isEmpty())
+        } catch (_: Exception) {
+            FeedModel()
         }
+        _data.postValue(result)
+
 
         if (fromRefresh) _refreshing.value = false // Сброс только для свайпа
     }
@@ -79,7 +87,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 repository.removeById(id)
                 load()
-            }catch (_: Exception) {
+            } catch (_: Exception) {
                 //В случае ошибки вернем как старый список постов и покажем ошибку
                 _data.postValue(FeedModel(posts = currentPosts, error = true))
             }
