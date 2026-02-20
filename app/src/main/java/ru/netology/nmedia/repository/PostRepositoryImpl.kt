@@ -29,6 +29,7 @@ class PostRepositoryImpl(
         val jsonType = "application/json".toMediaType()
     }
 
+    //Старый вариант синхронной загрузки списка постов
     override fun getAll(): List<Post> {
         val request = Request.Builder()
             .url("$BASE_URL/api/slow/posts")
@@ -70,9 +71,18 @@ class PostRepositoryImpl(
 
     override fun likeById(post: Post, callback: PostRepository.LikedByIdCallback) {
         val request = Request.Builder()
-            .url("$BASE_URL/api/slow/posts/${post.id}/likes")
-            .post(gson.toJson(post).toRequestBody(jsonType))
+            .url("$BASE_URL/api/slow/posts/${post.id}/likes") //Общий url для лайка и дизлайка
+            .apply {
+                if (!post.likedByMe) {
+                    //Ставим лайк, если его нет
+                    post(gson.toJson(post).toRequestBody(jsonType))
+                } else {
+                    //Удаляем лайк, если он был
+                    delete()
+                }
+            }
             .build()
+
         client.newCall(request)
             .enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
@@ -93,59 +103,63 @@ class PostRepositoryImpl(
                     }
                 }
             })
-
-
     }
-
-    override fun disLikeById(post: Post, callback: PostRepository.LikedByIdCallback) {
-        val request = Request.Builder()
-            .url("$BASE_URL/api/slow/posts/${post.id}/likes")
-            .delete()
-            .build()
-        client.newCall(request)
-            .enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    Log.e("PostRepository", "Ошибка likeByID")
-                    callback.onError(e)
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    try {
-                        callback.onSuccess(
-                            gson.fromJson(
-                                response.body.string(),
-                                Post::class.java
-                            )
-                        )
-                    } catch (e: Exception) {
-                        callback.onError(e)
-                    }
-                }
-            })
-
-    }
-
+//Не работает с текущим сервером
     override fun shareById(id: Long): Post {
         TODO("Not yet implemented")
     }
 
-    override fun removeById(id: Long) {
+    override fun removeById(id: Long, callback: PostRepository.Callback<Long>) {
         val request = Request.Builder()
             .url("$BASE_URL/api/slow/posts/$id")
             .delete()
             .build()
-        val call = client.newCall(request)
-        call.execute()
+        client.newCall(request)
+            .enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    Log.e("PostRepository", "Ошибка removeById")
+                    callback.onError(e)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    try {
+                        callback.onSuccess(id)
+                    } catch (e: Exception) {
+                        callback.onError(e)
+                    }
+                }
+            })
+
     }
 
-    override fun save(post: Post): Post {
+    override fun save(post: Post, callback: PostRepository.Callback<Post>) {
         val request = Request.Builder()
             .url("$BASE_URL/api/slow/posts")
             .post(gson.toJson(post).toRequestBody(jsonType))
             .build()
-        val call = client.newCall(request)
-        val response = call.execute()
-        val jsonResponse = response.body.string()
-        return gson.fromJson(jsonResponse, Post::class.java)
+
+        client.newCall(request)
+            .enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    Log.e("PostRepository", "Ошибка save")
+                    callback.onError(e)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    try {
+                        callback.onSuccess(
+                            gson.fromJson(
+                                response.body.string(),
+                                Post::class.java
+                            )
+                        )
+                    } catch (e: Exception) {
+                        callback.onError(e)
+                    }
+                }
+
+            })
+
+
     }
 }

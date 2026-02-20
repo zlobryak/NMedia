@@ -9,7 +9,6 @@ import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
 import ru.netology.nmedia.utils.SingleLiveEvent
-import kotlin.concurrent.thread
 
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
@@ -49,65 +48,55 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun likeById(post: Post) {
         val currentPosts = _data.value?.posts ?: emptyList()
-
-        if (post.likedByMe) {
-            _data.postValue(FeedModel(loading = true))
-
-            repository.disLikeById(post, object : PostRepository.LikedByIdCallback {
-
-                override fun onSuccess(post: Post) {
-                    val updatedPosts = currentPosts.map { currentPost ->
-                        if (currentPost.id == post.id) post else currentPost
-                    }
-                    _data.postValue(FeedModel(posts = updatedPosts, empty = updatedPosts.isEmpty()))
+        _data.postValue(FeedModel(loading = true))
+        repository.likeById(post, object : PostRepository.LikedByIdCallback {
+            override fun onSuccess(post: Post) {
+                val updatedPosts = currentPosts.map { currentPost ->
+                    if (currentPost.id == post.id) post else currentPost
                 }
+                _data.postValue(FeedModel(posts = updatedPosts, empty = updatedPosts.isEmpty()))
+            }
 
-                override fun onError(e: Exception) {
-                    _data.postValue(FeedModel(posts = currentPosts, error = true))
-                }
-            })
-        } else {
-            _data.postValue(FeedModel(loading = true))
-            repository.likeById(post, object : PostRepository.LikedByIdCallback {
-                override fun onSuccess(post: Post) {
-                    val updatedPosts = currentPosts.map { currentPost ->
-                        if (currentPost.id == post.id) post else currentPost
-                    }
-                    _data.postValue(FeedModel(posts = updatedPosts, empty = updatedPosts.isEmpty()))
-                }
-
-                override fun onError(e: Exception) {
-                    _data.postValue(FeedModel(posts = currentPosts, error = true))
-                }
-            })
-        }
+            override fun onError(e: Exception) {
+                _data.postValue(FeedModel(posts = currentPosts, error = true))
+            }
+        })
     }
 
 
     //Не работает с текущим сервером
     fun shareById(id: Long) = repository.shareById(id)
     fun removeById(id: Long) {
-        thread {
-            val currentPosts = _data.value?.posts ?: emptyList()
-            try {
-                repository.removeById(id)
+        _data.postValue(FeedModel(loading = true))
+
+        val currentPosts = _data.value?.posts ?: emptyList()
+
+        repository.removeById(id, object : PostRepository.Callback<Long> {
+            override fun onSuccess(data: Long) {
                 load()
-            } catch (_: Exception) {
-                //В случае ошибки вернем как старый список постов и покажем ошибку
+            }
+
+            override fun onError(e: Exception) {
                 _data.postValue(FeedModel(posts = currentPosts, error = true))
             }
-        }
+
+        })
     }
 
     fun save(post: Post) {
-        //TODO сейчас можно успеть несколько раз нажать на кнопку доварить, получив несколько одинаковых постов
-        thread {
-            repository.save(post)
-            _postCreated.postValue(Unit)
-        }
+        //TODO сейчас можно успеть несколько раз нажать на кнопку, получив несколько одинаковых постов
+        _data.postValue(FeedModel(loading = true))
+
+        repository.save(post, object : PostRepository.Callback<Post> {
+            override fun onSuccess(data: Post) {
+                _postCreated.postValue(Unit)
+            }
+
+            override fun onError(e: Exception) {
+                _data.postValue(FeedModel(error = true))
+            }
+        })
     }
-
-
 }
 
 
