@@ -51,6 +51,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         _data.postValue(FeedModel(loading = true))
         repository.likeById(post, object : PostRepository.LikedByIdCallback {
             override fun onSuccess(post: Post) {
+                //Перезаписываем в списке постов тот, отображение которого нужно обновить
                 val updatedPosts = currentPosts.map { currentPost ->
                     if (currentPost.id == post.id) post else currentPost
                 }

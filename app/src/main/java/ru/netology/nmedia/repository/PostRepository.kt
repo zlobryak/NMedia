@@ -10,12 +10,13 @@ interface PostRepository {
     fun save(post: Post, callback: Callback<Post>)
     fun getAllAsync(callback: GetAllCallback)
 
+    //Интерфейс, который создан по аналогии с кодом из лекции
     interface GetAllCallback {
         fun onSuccess(posts: List<Post>) {}
         fun onError(e: Exception) {}
     }
 
-    //Интерфейс для лайка и дизлайка одновременно
+    //Интерфейс для лайка и дизлайка одновременно, создан ради тренировки по аналогии с лекцией
     interface LikedByIdCallback {
         fun onSuccess(post: Post) {}
         fun onError(e: Exception) {}
@@ -27,5 +28,3 @@ interface PostRepository {
         fun onError(e: Exception)
     }
 }
-
-

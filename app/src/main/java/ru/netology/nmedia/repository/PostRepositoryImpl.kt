@@ -70,6 +70,7 @@ class PostRepositoryImpl(
     }
 
     override fun likeById(post: Post, callback: PostRepository.LikedByIdCallback) {
+        //Формирует запрос
         val request = Request.Builder()
             .url("$BASE_URL/api/slow/posts/${post.id}/likes") //Общий url для лайка и дизлайка
             .apply {
@@ -83,6 +84,7 @@ class PostRepositoryImpl(
             }
             .build()
 
+        //Вызывает запрос
         client.newCall(request)
             .enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
@@ -92,7 +94,7 @@ class PostRepositoryImpl(
 
                 override fun onResponse(call: Call, response: Response) {
                     try {
-                        callback.onSuccess(
+                        callback.onSuccess( //Получаем в ответе измененный пост
                             gson.fromJson(
                                 response.body.string(),
                                 Post::class.java
@@ -104,12 +106,14 @@ class PostRepositoryImpl(
                 }
             })
     }
-//Не работает с текущим сервером
+
+    //Не работает с текущим сервером
     override fun shareById(id: Long): Post {
         TODO("Not yet implemented")
     }
 
     override fun removeById(id: Long, callback: PostRepository.Callback<Long>) {
+        //Формируем запрос на удаление
         val request = Request.Builder()
             .url("$BASE_URL/api/slow/posts/$id")
             .delete()
@@ -123,7 +127,7 @@ class PostRepositoryImpl(
 
                 override fun onResponse(call: Call, response: Response) {
                     try {
-                        callback.onSuccess(id)
+                        callback.onSuccess(id) //Отправляем Id поста, который нужно удалить
                     } catch (e: Exception) {
                         callback.onError(e)
                     }
@@ -133,6 +137,7 @@ class PostRepositoryImpl(
     }
 
     override fun save(post: Post, callback: PostRepository.Callback<Post>) {
+        //Формируем запрос на сохранение нового поста
         val request = Request.Builder()
             .url("$BASE_URL/api/slow/posts")
             .post(gson.toJson(post).toRequestBody(jsonType))
@@ -147,7 +152,7 @@ class PostRepositoryImpl(
 
                 override fun onResponse(call: Call, response: Response) {
                     try {
-                        callback.onSuccess(
+                        callback.onSuccess( //Получаем в ответ новый созданный пост
                             gson.fromJson(
                                 response.body.string(),
                                 Post::class.java
