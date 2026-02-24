@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import ru.netology.nmedia.api.PostsApiServiceImpl
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.PostRepository
@@ -13,6 +14,7 @@ import ru.netology.nmedia.utils.SingleLiveEvent
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: PostRepository = PostRepositoryImpl(
+        apiService = PostsApiServiceImpl()
     )
     private val _data = MutableLiveData(FeedModel())
     val data: LiveData<FeedModel>
