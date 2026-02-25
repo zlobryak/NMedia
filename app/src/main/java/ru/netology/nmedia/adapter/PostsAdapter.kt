@@ -79,26 +79,24 @@ class PostViewHolder(
 
     /**
      * Привязывает данные поста к UI-элементам карточки.
-     * Устанавливает текст, аватар, счетчики, обработчики кликов и состояние видео-превью.
+     * Устанавливает текст, аватар, счетчики, обработчики кликов, состояние видео-превью и вложений, если они есть.
      *
      * @param post объект поста, данные которого отображаются в карточке
      */
     fun bind(post: Post) {
-        //Формируем url для аватара автора
-        val baseUrl = "http://10.0.2.2:9999"
-        val authorAvatar = "$baseUrl/avatars/${post.authorAvatar}"
-        //Загружаем изображение через Glide
-        Glide.with(binding.avatar.context)
-            .load(authorAvatar)
-            .circleCrop() // Обрезает аватарку по кругу
-            .placeholder(R.drawable.ic_loading_100dp) // Показываем заглушку, пока грузится картинка
-            .error(R.drawable.ic_error_100dp)       // Показываем заглушку, если ошибка
-            .timeout(10_000)
-            .into(binding.avatar)
+
+        //TODO Убрать хардкод и повторяющийся код для загрузки аватара и картинок вложений в отдельный класс.
+        val baseUrl = "http://10.0.2.2:9999" //базовый url
 
         binding.apply {
-            // Устанавливаем аватар автора
-            avatar
+            // Устанавливаем аватар автора через глайд
+            Glide.with(binding.avatar.context)
+                .load("$baseUrl/avatars/${post.authorAvatar}")
+                .circleCrop() // Обрезает аватарку по кругу
+                .placeholder(R.drawable.ic_loading_100dp) // Показываем заглушку, пока грузится картинка
+                .error(R.drawable.ic_error_100dp)       // Показываем заглушку, если ошибка
+                .timeout(10_000)
+                .into(binding.avatar)
             // Имя автора поста
             author.text = post.author
             // Основной текст поста
@@ -155,6 +153,7 @@ class PostViewHolder(
             icViews.text = counterFormatter(post.views)
 
             // Управление видимостью блока видео-превью
+            // TODO В новой итерации появился блок вложения, который по задаче пока может иметь тип только изображения
             if (!post.videoUrl.isNullOrBlank()) {
                 // Показываем блок с видео-превью
                 editGroup.visibility = View.VISIBLE
@@ -177,6 +176,21 @@ class PostViewHolder(
             // Обработка клика по превью видео — также открывает видео
             videoPreview.setOnClickListener {
                 post.videoUrl?.let(listener::onOpenVideo)
+            }
+
+            //Отображение картинки для постов с вложениями
+            if (!post.attachment?.url.isNullOrBlank()) {
+                Glide.with(binding.attachment.context)
+                    .load("$baseUrl/images/${post.attachment.url}")
+                    .placeholder(R.drawable.ic_loading_100dp) // Показываем заглушку, пока грузится картинка
+                    .error(R.drawable.ic_error_100dp)       // Показываем заглушку, если ошибка
+                    .timeout(10_000)
+                    .into(binding.attachment)
+                // Показываем блок с вложением
+                attachment.visibility = View.VISIBLE
+            } else {
+                // Скрываем блок, вложения нет
+                attachment.visibility = View.GONE
             }
         }
     }

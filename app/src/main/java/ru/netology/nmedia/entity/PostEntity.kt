@@ -2,6 +2,7 @@ package ru.netology.nmedia.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.Post
 import kotlin.String
 
@@ -20,14 +21,15 @@ class PostEntity (
     val previewImageUrl: String? = null,
     val videoPreviewText: String? = null,
     val videoViewsCount: Int? = null,
-    val authorAvatar: String? = null
+    val authorAvatar: String? = null,
+    val attachment: Attachment? = null
 ){
     fun toDto() = Post(
-        id, author, content, published, likes, shareCount, likedByMe, views, videoUrl, previewImageUrl, videoPreviewText, videoViewsCount, authorAvatar
+        id, author, content, published, likes, shareCount, likedByMe, views, videoUrl, previewImageUrl, videoPreviewText, videoViewsCount, authorAvatar, attachment
     )
 
     companion object{
-        fun fromDto(post: Post) = PostEntity(post.id, post.author, post.content, post.published, post.likes, post.shareCount, post.likedByMe, post.views, post.videoUrl, post.previewImageUrl, post.videoPreviewText, post.videoViewsCount, post.authorAvatar)
+        fun fromDto(post: Post) = PostEntity(post.id, post.author, post.content, post.published, post.likes, post.shareCount, post.likedByMe, post.views, post.videoUrl, post.previewImageUrl, post.videoPreviewText, post.videoViewsCount, post.authorAvatar, post.attachment)
 
     }
 }
