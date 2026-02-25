@@ -9,6 +9,7 @@ import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
@@ -83,9 +84,21 @@ class PostViewHolder(
      * @param post объект поста, данные которого отображаются в карточке
      */
     fun bind(post: Post) {
+        //Формируем url для аватара автора
+        val baseUrl = "http://10.0.2.2:9999"
+        val authorAvatar = "$baseUrl/avatars/${post.authorAvatar}"
+        //Загружаем изображение через Glide
+        Glide.with(binding.avatar.context)
+            .load(authorAvatar)
+            .circleCrop() // Обрезает аватарку по кругу
+            .placeholder(R.drawable.ic_loading_100dp) // Показываем заглушку, пока грузится картинка
+            .error(R.drawable.ic_error_100dp)       // Показываем заглушку, если ошибка
+            .timeout(10_000)
+            .into(binding.avatar)
+
         binding.apply {
-            // Устанавливаем фиксированный аватар автора
-            avatar.setImageResource(R.drawable.ic_netology_48dp)
+            // Устанавливаем аватар автора
+            avatar
             // Имя автора поста
             author.text = post.author
             // Основной текст поста
@@ -114,17 +127,18 @@ class PostViewHolder(
                                 listener.onRemove(post)
                                 true
                             }
+
                             R.id.edit -> {
                                 listener.onEdit(post)
                                 true
                             }
+
                             else -> false
                         }
                     }
                     show()
                 }
             }
-
 
 
             // Обработка клика по основному контенту поста — переход на отдельный экран поста
