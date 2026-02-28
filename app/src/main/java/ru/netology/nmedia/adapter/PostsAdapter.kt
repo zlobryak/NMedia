@@ -9,10 +9,11 @@ import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.extensions.loadAttachment
+import ru.netology.nmedia.extensions.loadAvatar
 import ru.netology.nmedia.functions.counterFormatter
 
 /**
@@ -84,19 +85,9 @@ class PostViewHolder(
      * @param post объект поста, данные которого отображаются в карточке
      */
     fun bind(post: Post) {
-
-        //TODO Убрать хардкод и повторяющийся код для загрузки аватара и картинок вложений в отдельный класс.
-        val baseUrl = "http://10.0.2.2:9999" //базовый url
-
         binding.apply {
             // Устанавливаем аватар автора через глайд
-            Glide.with(binding.avatar.context)
-                .load("$baseUrl/avatars/${post.authorAvatar}")
-                .circleCrop() // Обрезает аватарку по кругу
-                .placeholder(R.drawable.ic_loading_100dp) // Показываем заглушку, пока грузится картинка
-                .error(R.drawable.ic_error_100dp)       // Показываем заглушку, если ошибка
-                .timeout(10_000)
-                .into(binding.avatar)
+            avatar.loadAvatar(post.authorAvatar)
             // Имя автора поста
             author.text = post.author
             // Основной текст поста
@@ -179,17 +170,13 @@ class PostViewHolder(
             }
 
             //Отображение картинки для постов с вложениями
-            if (!post.attachment?.url.isNullOrBlank()) {
-                Glide.with(binding.attachment.context)
-                    .load("$baseUrl/images/${post.attachment.url}")
-                    .placeholder(R.drawable.ic_loading_100dp) // Показываем заглушку, пока грузится картинка
-                    .error(R.drawable.ic_error_100dp)       // Показываем заглушку, если ошибка
-                    .timeout(10_000)
-                    .into(binding.attachment)
+            val attachmentUrl = post.attachment?.url
+            if (!attachmentUrl.isNullOrBlank()) {
+                attachment.loadAttachment(attachmentUrl)
                 // Показываем блок с вложением
                 attachment.visibility = View.VISIBLE
             } else {
-                // Скрываем блок, вложения нет
+                // Скрываем блок, вложения, если его нет
                 attachment.visibility = View.GONE
             }
         }
