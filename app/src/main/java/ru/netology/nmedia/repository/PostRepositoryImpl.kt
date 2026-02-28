@@ -3,8 +3,11 @@ package ru.netology.nmedia.repository
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import okhttp3.OkHttpClient
-import okhttp3.Request
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import ru.netology.nmedia.api.ApiCallback
+import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.api.PostsApiService
 import ru.netology.nmedia.dto.Post
 import java.util.concurrent.TimeUnit
@@ -24,27 +27,32 @@ class PostRepositoryImpl(
         const val BASE_URL = "http://10.0.2.2:9999"
     }
 
-    //Старый вариант синхронной загрузки списка постов
-    override fun getAll(): List<Post> {
-        val request = Request.Builder()
-            .url("$BASE_URL/api/slow/posts")
-            .build()
-        return gson.fromJson(
-            client.newCall(request)
-                .execute()
-                .body.string(),
-            postsType
-        )
-    }
+    //Синхронная загрузка постов
+    override fun getAll(): List<Post> =
+        PostApi.service.getAll( )
+            .execute()
+            .body()
+            .orEmpty()
+
 
     override fun getAllAsync(callback: PostRepository.GetAllCallback) {
-        apiService.getPosts(object : ApiCallback<List<Post>> {
-            override fun onSuccess(data: List<Post>) {
-                callback.onSuccess(data)
+        PostApi.service.getAll().enqueue(object : Callback<List<Post>> {
+            override fun onResponse(
+                call: Call<List<Post>?>,
+                response: Response<List<Post>?>
+            ) {
+                if (response.isSuccessful){
+                    callback.onSuccess(response.body().orEmpty())
+                } else{
+                    callback.onError(RuntimeException(response.errorBody()?.string().orEmpty()))
+                }
             }
 
-            override fun onError(e: Exception) {
-                callback.onError(e)
+            override fun onFailure(
+                call: Call<List<Post>?>,
+                t: Throwable
+            ) {
+                TODO("Not yet implemented") //Лекция 40:45
             }
         })
     }
