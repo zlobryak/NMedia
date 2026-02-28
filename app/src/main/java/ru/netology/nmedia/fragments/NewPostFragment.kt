@@ -64,7 +64,8 @@ class NewPostFragment : Fragment() {
                         id = editPost.id,
                         content = text,
                         author = editPost.author,
-                        published = editPost.published
+                        published = editPost.published,
+                        authorAvatar = "netology.jpg"
                     )
                 )
                 // Раньше сразу возвращались в ленту, сейчас ждем создания поста на сервере

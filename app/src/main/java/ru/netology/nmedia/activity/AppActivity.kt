@@ -24,6 +24,7 @@ import kotlin.apply
  * Обрабатывает входящие Intent'ы с действием ACTION_SEND (например, "Поделиться" из других приложений).
  */
 class AppActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -107,4 +108,5 @@ class AppActivity : AppCompatActivity() {
             println(it)
         }
     }
+
 }

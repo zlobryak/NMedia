@@ -74,5 +74,8 @@ dependencies {
     implementation(libs.play.services)
     coreLibraryDesugaring(libs.desugaring)
     implementation(libs.okhttp)
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0")
+    implementation(libs.androidx.swiperefreshlayout)
+    implementation(libs.converter.gson)
+    implementation(libs.retrofit)
+    implementation(libs.glide)
 }

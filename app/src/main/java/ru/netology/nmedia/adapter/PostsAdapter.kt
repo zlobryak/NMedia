@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.extensions.loadAttachment
+import ru.netology.nmedia.extensions.loadAvatar
 import ru.netology.nmedia.functions.counterFormatter
 
 /**
@@ -78,14 +80,14 @@ class PostViewHolder(
 
     /**
      * Привязывает данные поста к UI-элементам карточки.
-     * Устанавливает текст, аватар, счетчики, обработчики кликов и состояние видео-превью.
+     * Устанавливает текст, аватар, счетчики, обработчики кликов, состояние видео-превью и вложений, если они есть.
      *
      * @param post объект поста, данные которого отображаются в карточке
      */
     fun bind(post: Post) {
         binding.apply {
-            // Устанавливаем фиксированный аватар автора
-            avatar.setImageResource(R.drawable.ic_netology_48dp)
+            // Устанавливаем аватар автора через глайд
+            avatar.loadAvatar(post.authorAvatar)
             // Имя автора поста
             author.text = post.author
             // Основной текст поста
@@ -114,17 +116,18 @@ class PostViewHolder(
                                 listener.onRemove(post)
                                 true
                             }
+
                             R.id.edit -> {
                                 listener.onEdit(post)
                                 true
                             }
+
                             else -> false
                         }
                     }
                     show()
                 }
             }
-
 
 
             // Обработка клика по основному контенту поста — переход на отдельный экран поста
@@ -141,6 +144,7 @@ class PostViewHolder(
             icViews.text = counterFormatter(post.views)
 
             // Управление видимостью блока видео-превью
+            // TODO В новой итерации появился блок вложения, который по задаче пока может иметь тип только изображения
             if (!post.videoUrl.isNullOrBlank()) {
                 // Показываем блок с видео-превью
                 editGroup.visibility = View.VISIBLE
@@ -163,6 +167,17 @@ class PostViewHolder(
             // Обработка клика по превью видео — также открывает видео
             videoPreview.setOnClickListener {
                 post.videoUrl?.let(listener::onOpenVideo)
+            }
+
+            //Отображение картинки для постов с вложениями
+            val attachmentUrl = post.attachment?.url
+            if (!attachmentUrl.isNullOrBlank()) {
+                attachment.loadAttachment(attachmentUrl)
+                // Показываем блок с вложением
+                attachment.visibility = View.VISIBLE
+            } else {
+                // Скрываем блок, вложения, если его нет
+                attachment.visibility = View.GONE
             }
         }
     }
