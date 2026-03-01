@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import ru.netology.nmedia.api.PostsApiServiceImpl
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.PostRepository
@@ -14,7 +13,6 @@ import ru.netology.nmedia.utils.SingleLiveEvent
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: PostRepository = PostRepositoryImpl(
-        apiService = PostsApiServiceImpl()
     )
     private val _data = MutableLiveData(FeedModel())
     val data: LiveData<FeedModel>
@@ -35,13 +33,13 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
         _data.postValue(FeedModel(loading = true))
 
-        repository.getAllAsync(object : PostRepository.GetAllCallback {
+        repository.getAllAsync(object : PostRepository.Callback<List<Post>> {
             override fun onSuccess(posts: List<Post>) {
-                _data.postValue(FeedModel(posts = posts, empty = posts.isEmpty()))
+                _data.value = (FeedModel(posts = posts, empty = posts.isEmpty()))
             }
 
-            override fun onError(e: Exception) {
-                _data.postValue(FeedModel(error = true))
+            override fun onError(e: Throwable) {
+                _data.value = (FeedModel(error = true))
             }
         })
         if (fromRefresh) _refreshing.value = false // Сброс только для свайпа
@@ -51,17 +49,17 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun likeById(post: Post) {
         val currentPosts = _data.value?.posts ?: emptyList()
         _data.postValue(FeedModel(loading = true))
-        repository.likeById(post, object : PostRepository.LikedByIdCallback {
-            override fun onSuccess(post: Post) {
+        repository.likeById(post, object : PostRepository.Callback<Post> {
+            override fun onSuccess(data: Post) {
                 //Перезаписываем в списке постов тот, отображение которого нужно обновить
                 val updatedPosts = currentPosts.map { currentPost ->
-                    if (currentPost.id == post.id) post else currentPost
+                    if (currentPost.id == post?.id) post else currentPost
                 }
-                _data.postValue(FeedModel(posts = updatedPosts, empty = updatedPosts.isEmpty()))
+                _data.value = (FeedModel(posts = updatedPosts, empty = updatedPosts.isEmpty()))
             }
 
-            override fun onError(e: Exception) {
-                _data.postValue(FeedModel(posts = currentPosts, error = true))
+            override fun onError(e: Throwable) {
+                _data.value = (FeedModel(posts = currentPosts, error = true))
             }
         })
     }
@@ -79,7 +77,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 load()
             }
 
-            override fun onError(e: Exception) {
+            override fun onError(e: Throwable) {
                 _data.postValue(FeedModel(posts = currentPosts, error = true))
             }
 
@@ -95,7 +93,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _postCreated.postValue(Unit)
             }
 
-            override fun onError(e: Exception) {
+            override fun onError(e: Throwable) {
                 _data.postValue(FeedModel(error = true))
             }
         })

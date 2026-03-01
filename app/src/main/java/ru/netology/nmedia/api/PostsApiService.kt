@@ -15,7 +15,7 @@ import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.dto.Post
 import java.util.concurrent.TimeUnit
 
-private const val BASE_URL: String = "http://10.0.2.2:9999"
+private const val BASE_URL: String = "${BuildConfig.BASE_URL}/api/slow/"
 
 
 private val client = OkHttpClient.Builder()
@@ -44,22 +44,18 @@ interface PostsApiService {
     fun savePost(@Body post: Post): Call<Post>
 
     @DELETE("posts/{id}")
-    fun deletePost(@Path("id") Id: Long): Call<Unit>
+    fun deletePost(@Path("id") id: Long): Call<Long>
 
-    fun getPosts(callback: ApiCallback<List<Post>>)
-    fun toggleLike(postId: Long, liked: Boolean, callback: ApiCallback<Post>)
-    fun deletePost(postId: Long, callback: ApiCallback<Unit>)
-    fun createPost(post: Post, callback: ApiCallback<Post>)
+    @POST("post/{id}/likes")
+    fun like(@Path("id") id: Long): Call<Post>
+
+    @DELETE("post/{id}/likes")
+    fun dislike(@Path("id") id: Long): Call<Post>
+
 }
 
 object PostApi{
     val service by lazy {
         retrofit.create<PostsApiService>()
     }
-}
-
-
-interface ApiCallback<T> {
-    fun onSuccess(data: T)
-    fun onError(e: Exception)
 }

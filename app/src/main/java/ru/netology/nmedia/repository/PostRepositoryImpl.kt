@@ -1,49 +1,34 @@
 package ru.netology.nmedia.repository
 
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import ru.netology.nmedia.api.ApiCallback
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.api.PostsApiService
 import ru.netology.nmedia.dto.Post
-import java.util.concurrent.TimeUnit
+import kotlin.collections.orEmpty
 
 class PostRepositoryImpl(
-    private val apiService: PostsApiService
+
 ) : PostRepository {
-
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .build()
-
-    private val gson = Gson()
-    private val postsType = object : TypeToken<List<Post>>() {}.type
-
-    private companion object {
-        const val BASE_URL = "http://10.0.2.2:9999"
-    }
 
     //Синхронная загрузка постов
     override fun getAll(): List<Post> =
-        PostApi.service.getAll( )
+        PostApi.service.getAll()
             .execute()
             .body()
             .orEmpty()
 
 
-    override fun getAllAsync(callback: PostRepository.GetAllCallback) {
+    override fun getAllAsync(callback: PostRepository.Callback<List<Post>>) {
         PostApi.service.getAll().enqueue(object : Callback<List<Post>> {
             override fun onResponse(
                 call: Call<List<Post>?>,
                 response: Response<List<Post>?>
             ) {
-                if (response.isSuccessful){
+                if (response.isSuccessful) {
                     callback.onSuccess(response.body().orEmpty())
-                } else{
+                } else {
                     callback.onError(RuntimeException(response.errorBody()?.string().orEmpty()))
                 }
             }
@@ -52,26 +37,43 @@ class PostRepositoryImpl(
                 call: Call<List<Post>?>,
                 t: Throwable
             ) {
-                TODO("Not yet implemented") //Лекция 40:45
+                callback.onError(t)
             }
         })
     }
 
-    override fun likeById(post: Post, callback: PostRepository.LikedByIdCallback) {
-        apiService.toggleLike(
-            postId = post.id,
-            liked = !post.likedByMe, // Инвертируем состояние
-            callback = object : ApiCallback<Post> {
-                override fun onSuccess(data: Post) {
-                    callback.onSuccess(data)
-                }
+    override fun likeById(post: Post, callback: PostRepository.Callback<Post>) {
+        val call: Call<Post> = if (!post.likedByMe) {
+            PostApi.service.like(post.id)
+        } else {
+            PostApi.service.dislike(post.id)
+        }
 
-                override fun onError(e: Exception) {
-                    callback.onError(e)
+        call.enqueue(object : Callback<Post> {
+            override fun onResponse(
+                call: Call<Post>,
+                response: Response<Post?>
+            ) {
+                if (response.isSuccessful) {
+                    val body = response.body() ?: run {
+                        callback.onError(RuntimeException("Empty response body"))
+                        return
+                    }
+                    callback.onSuccess(body)
+                } else {
+                    callback.onError(RuntimeException(response.errorBody()?.string().orEmpty()))
                 }
             }
-        )
+
+            override fun onFailure(
+                call: Call<Post?>,
+                t: Throwable
+            ) {
+                callback.onError(t)
+            }
+        })
     }
+
 
     //Не работает с текущим сервером
     override fun shareById(id: Long): Post {
@@ -79,25 +81,54 @@ class PostRepositoryImpl(
     }
 
     override fun removeById(id: Long, callback: PostRepository.Callback<Long>) {
-        apiService.deletePost(id, object : ApiCallback<Unit> {
-            override fun onSuccess(data: Unit) {
-                callback.onSuccess(id)
+        PostApi.service.deletePost(id).enqueue(object : Callback<Long> {
+            override fun onResponse(
+                call: Call<Long?>,
+                response: Response<Long?>
+            ) {
+                if (response.isSuccessful) {
+                    if (response.isSuccessful) {
+                        val resultId = response.body() ?: id
+                        callback.onSuccess(resultId)
+                    } else {
+                        callback.onError(RuntimeException(response.errorBody()?.string().orEmpty()))
+                    }
+                } else {
+                    callback.onError(RuntimeException(response.errorBody()?.string().orEmpty()))
+                }
             }
 
-            override fun onError(e: Exception) {
-                callback.onError(e)
+            override fun onFailure(
+                call: Call<Long>,
+                t: Throwable
+            ) {
+                callback.onError(t)
             }
         })
     }
 
     override fun save(post: Post, callback: PostRepository.Callback<Post>) {
-        apiService.createPost(post, object : ApiCallback<Post> {
-            override fun onSuccess(data: Post) {
-                callback.onSuccess(data)
+        PostApi.service.savePost(post).enqueue(object : Callback<Post> {
+            override fun onResponse(
+                call: Call<Post?>,
+                response: Response<Post?>
+            ) {
+                if (response.isSuccessful) {
+                    val post = response.body() ?: run {
+                        callback.onError(RuntimeException("Empty body"))
+                        return
+                    }
+                    callback.onSuccess(post)
+                } else {
+                    callback.onError(RuntimeException(response.errorBody()?.string().orEmpty()))
+                }
             }
 
-            override fun onError(e: Exception) {
-                callback.onError(e)
+            override fun onFailure(
+                call: Call<Post>,
+                t: Throwable
+            ) {
+                callback.onError(t)
             }
         })
     }
