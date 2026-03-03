@@ -4,7 +4,6 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import ru.netology.nmedia.api.PostApi
-import ru.netology.nmedia.api.PostsApiService
 import ru.netology.nmedia.dto.Post
 import kotlin.collections.orEmpty
 
@@ -29,7 +28,7 @@ class PostRepositoryImpl(
                 if (response.isSuccessful) {
                     callback.onSuccess(response.body().orEmpty())
                 } else {
-                    callback.onError(RuntimeException(response.errorBody()?.string().orEmpty()))
+                    callback.onError(RuntimeException(response.errorBody()?.string().orEmpty()), response.code())
                 }
             }
 
@@ -61,7 +60,7 @@ class PostRepositoryImpl(
                     }
                     callback.onSuccess(body)
                 } else {
-                    callback.onError(RuntimeException(response.errorBody()?.string().orEmpty()))
+                    callback.onError(RuntimeException(response.errorBody()?.string().orEmpty()), response.code())
                 }
             }
 
@@ -81,25 +80,22 @@ class PostRepositoryImpl(
     }
 
     override fun removeById(id: Long, callback: PostRepository.Callback<Long>) {
-        PostApi.service.deletePost(id).enqueue(object : Callback<Long> {
+        PostApi.service.deletePost(id).enqueue(object : Callback<Unit> {
             override fun onResponse(
-                call: Call<Long?>,
-                response: Response<Long?>
+                call: Call<
+                        Unit>,
+                response: Response<Unit>
             ) {
                 if (response.isSuccessful) {
-                    if (response.isSuccessful) {
-                        val resultId = response.body() ?: id
-                        callback.onSuccess(resultId)
-                    } else {
-                        callback.onError(RuntimeException(response.errorBody()?.string().orEmpty()))
-                    }
+                    callback.onSuccess(id)
+
                 } else {
-                    callback.onError(RuntimeException(response.errorBody()?.string().orEmpty()))
+                    callback.onError(RuntimeException(response.errorBody()?.string().orEmpty()), response.code())
                 }
             }
 
             override fun onFailure(
-                call: Call<Long>,
+                call: Call<Unit>,
                 t: Throwable
             ) {
                 callback.onError(t)
@@ -120,7 +116,7 @@ class PostRepositoryImpl(
                     }
                     callback.onSuccess(post)
                 } else {
-                    callback.onError(RuntimeException(response.errorBody()?.string().orEmpty()))
+                    callback.onError(RuntimeException(response.errorBody()?.string().orEmpty()), response.code())
                 }
             }
 

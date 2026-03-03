@@ -15,6 +15,6 @@ interface PostRepository {
     //Интерфейс для любых типов принимаемых параметров
     interface Callback<T> {
         fun onSuccess(data: T)
-        fun onError(e: Throwable)
+        fun onError(e: Throwable, statusCode: Int? = null)
     }
 }

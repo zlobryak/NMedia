@@ -1,6 +1,8 @@
 package ru.netology.nmedia.viewmodel
 
 import android.app.Application
+import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -24,6 +26,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val _refreshing = MutableLiveData(false)
     val refreshing: LiveData<Boolean> = _refreshing
 
+    private val _errorEvent = SingleLiveEvent<String>()
+    val errorEvent: LiveData<String> = _errorEvent
+
+    private val _successEvent = SingleLiveEvent<String>()
+    val successEvent: LiveData<String> = _successEvent
+
     init {
         load()
     }
@@ -38,8 +46,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _data.value = (FeedModel(posts = posts, empty = posts.isEmpty()))
             }
 
-            override fun onError(e: Throwable) {
-                _data.value = (FeedModel(error = true))
+            override fun onError(e: Throwable, statusCode: Int?) {
+                _errorEvent.value = ("Error code: $statusCode")
+                _data.postValue(FeedModel(loading = false, error = true))
             }
         })
         if (fromRefresh) _refreshing.value = false // Сброс только для свайпа
@@ -53,13 +62,14 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             override fun onSuccess(data: Post) {
                 //Перезаписываем в списке постов тот, отображение которого нужно обновить
                 val updatedPosts = currentPosts.map { currentPost ->
-                    if (currentPost.id == post?.id) post else currentPost
+                    if (currentPost.id == post.id) data else currentPost
                 }
                 _data.value = (FeedModel(posts = updatedPosts, empty = updatedPosts.isEmpty()))
             }
 
-            override fun onError(e: Throwable) {
-                _data.value = (FeedModel(posts = currentPosts, error = true))
+            override fun onError(e: Throwable, statusCode: Int?) {
+                _errorEvent.value = ("Error code: $statusCode")
+                _data.postValue(FeedModel(posts = currentPosts, loading = false))
             }
         })
     }
@@ -73,19 +83,29 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         val currentPosts = _data.value?.posts ?: emptyList()
 
         repository.removeById(id, object : PostRepository.Callback<Long> {
-            override fun onSuccess(data: Long) {
-                load()
+            override fun onSuccess(id: Long) {
+                // 1. Удаляем пост из локального списка
+                val updatedPosts = currentPosts.filter { it.id != id }
+
+                // 2. Обновляем UI: список + сброс загрузки
+                _data.value = FeedModel(
+                    posts = updatedPosts,
+                    empty = updatedPosts.isEmpty(),
+                    loading = false
+                )
+                _successEvent.value = "Пост удалён"
             }
 
-            override fun onError(e: Throwable) {
-                _data.postValue(FeedModel(posts = currentPosts, error = true))
+            override fun onError(e: Throwable, statusCode: Int?) {
+                _errorEvent.value = ("Error code: $statusCode, post was not deleted")
+                _data.postValue(FeedModel(posts = currentPosts, loading = false))
             }
 
         })
     }
 
     fun save(post: Post) {
-        //TODO сейчас можно успеть несколько раз нажать на кнопку, получив несколько одинаковых постов
+        //TODO проверить, работает ли сохранение вообще, возможно неверное обращение по API
         _data.postValue(FeedModel(loading = true))
 
         repository.save(post, object : PostRepository.Callback<Post> {
@@ -93,7 +113,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _postCreated.postValue(Unit)
             }
 
-            override fun onError(e: Throwable) {
+            override fun onError(e: Throwable, statusCode: Int?) {
+                _errorEvent.value = ("Error code: $statusCode, post was not created")
                 _data.postValue(FeedModel(error = true))
             }
         })

@@ -15,7 +15,7 @@ import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.dto.Post
 import java.util.concurrent.TimeUnit
 
-private const val BASE_URL: String = "${BuildConfig.BASE_URL}/api/slow/"
+private const val BASE_URL: String = "${BuildConfig.BASE_URL}/api/"
 
 
 private val client = OkHttpClient.Builder()
@@ -44,7 +44,7 @@ interface PostsApiService {
     fun savePost(@Body post: Post): Call<Post>
 
     @DELETE("posts/{id}")
-    fun deletePost(@Path("id") id: Long): Call<Long>
+    fun deletePost(@Path("id") id: Long): Call<Unit>
 
     @POST("post/{id}/likes")
     fun like(@Path("id") id: Long): Call<Post>
