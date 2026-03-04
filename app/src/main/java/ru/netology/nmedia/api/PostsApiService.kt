@@ -15,7 +15,7 @@ import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.dto.Post
 import java.util.concurrent.TimeUnit
 
-private const val BASE_URL: String = "${BuildConfig.BASE_URL}/api/"
+private const val BASE_URL: String = "${BuildConfig.BASE_URL}/api/slow/"
 
 
 private val client = OkHttpClient.Builder()
