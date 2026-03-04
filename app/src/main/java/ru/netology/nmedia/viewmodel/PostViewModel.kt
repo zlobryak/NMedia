@@ -1,8 +1,6 @@
 package ru.netology.nmedia.viewmodel
 
 import android.app.Application
-import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -42,8 +40,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         _data.postValue(FeedModel(loading = true))
 
         repository.getAllAsync(object : PostRepository.Callback<List<Post>> {
-            override fun onSuccess(posts: List<Post>) {
-                _data.value = (FeedModel(posts = posts, empty = posts.isEmpty()))
+            override fun onSuccess(data: List<Post>) {
+                _data.value = (FeedModel(posts = data, empty = data.isEmpty()))
             }
 
             override fun onError(e: Throwable, statusCode: Int?) {
@@ -68,7 +66,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             override fun onError(e: Throwable, statusCode: Int?) {
-                _errorEvent.value = ("Error code: $statusCode")
+                _errorEvent.value = ("Error code: $statusCode, try later")
                 _data.postValue(FeedModel(posts = currentPosts, loading = false))
             }
         })
@@ -83,17 +81,18 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         val currentPosts = _data.value?.posts ?: emptyList()
 
         repository.removeById(id, object : PostRepository.Callback<Long> {
-            override fun onSuccess(id: Long) {
-                // 1. Удаляем пост из локального списка
+            override fun onSuccess(data: Long) {
+                // Удаляем пост из локального списка
                 val updatedPosts = currentPosts.filter { it.id != id }
 
-                // 2. Обновляем UI: список + сброс загрузки
+                // Обновляем UI: список + сброс загрузки
                 _data.value = FeedModel(
                     posts = updatedPosts,
                     empty = updatedPosts.isEmpty(),
                     loading = false
                 )
-                _successEvent.value = "Пост удалён"
+//                Покажем сообщение об удачном удалении поста
+                _successEvent.value = "Post deleted"
             }
 
             override fun onError(e: Throwable, statusCode: Int?) {
