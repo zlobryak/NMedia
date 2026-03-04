@@ -18,6 +18,6 @@ data class Post(
     val previewImageUrl: String? = null,
     val videoPreviewText: String? = null,
     val videoViewsCount: Int? = null,
-    val authorAvatar: String? = null,
+    val authorAvatar: String,
     val attachment: Attachment? = null
 ) : Parcelable

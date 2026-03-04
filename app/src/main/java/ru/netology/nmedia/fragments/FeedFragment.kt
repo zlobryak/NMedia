@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -143,6 +144,15 @@ class FeedFragment : Fragment() {
         // Синхронизация состояния обновления
         viewModel.refreshing.observe(viewLifecycleOwner) { isRefreshing ->
             binding.swiperefresh.isRefreshing = isRefreshing
+        }
+
+        //Показываем ошибку пользователю
+        viewModel.errorEvent.observe(viewLifecycleOwner) { errorMessage ->
+            Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show()
+        }
+        //Показываем сообщение при удчаном удалении
+        viewModel.successEvent.observe(viewLifecycleOwner) { message ->
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
         }
 
         // Первоначальная загрузка БЕЗ индикатора свайпа
