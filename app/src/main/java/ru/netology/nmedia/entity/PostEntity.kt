@@ -21,9 +21,11 @@ class PostEntity (
     val previewImageUrl: String? = null,
     val videoPreviewText: String? = null,
     val videoViewsCount: Int? = null,
-    val authorAvatar: String? = null,
+    val authorAvatar: String,
     val attachment: Attachment? = null
 ){
+
+    //Для работы с локальной базой данных
     fun toDto() = Post(
         id, author, content, published, likes, shareCount, likedByMe, views, videoUrl, previewImageUrl, videoPreviewText, videoViewsCount, authorAvatar, attachment
     )

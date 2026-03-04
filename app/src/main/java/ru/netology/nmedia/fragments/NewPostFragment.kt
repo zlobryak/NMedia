@@ -81,6 +81,7 @@ class NewPostFragment : Fragment() {
                         author = "Me",
                         content = text,
                         published = "1",
+                        authorAvatar = "netology.jpg"
                     )
                 )
                 // Удаляем черновик после успешного сохранения (только в режиме создания)

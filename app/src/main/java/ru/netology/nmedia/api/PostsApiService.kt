@@ -46,10 +46,10 @@ interface PostsApiService {
     @DELETE("posts/{id}")
     fun deletePost(@Path("id") id: Long): Call<Unit>
 
-    @POST("post/{id}/likes")
+    @POST("posts/{id}/likes")
     fun like(@Path("id") id: Long): Call<Post>
 
-    @DELETE("post/{id}/likes")
+    @DELETE("posts/{id}/likes")
     fun dislike(@Path("id") id: Long): Call<Post>
 
 }
