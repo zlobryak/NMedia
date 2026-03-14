@@ -2,9 +2,10 @@ package ru.netology.nmedia.extensions
 
 import android.widget.ImageView
 import com.bumptech.glide.Glide
+import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
 
-private const val BASE_URL = "http://10.0.2.2:9999"
+private const val BASE_URL = "${BuildConfig.BASE_URL}/api/slow/"
 
 fun ImageView.loadAvatar(authorAvatar: String?) {
     Glide.with(context)
