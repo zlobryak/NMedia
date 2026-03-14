@@ -55,7 +55,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun likeById(post: Post) {
         val currentPosts = _data.value?.posts ?: emptyList()
-        _data.postValue(FeedModel(loading = true))
         repository.likeById(post, object : PostRepository.Callback<Post> {
             override fun onSuccess(data: Post) {
                 //Перезаписываем в списке постов тот, отображение которого нужно обновить
@@ -76,8 +75,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     //Не работает с текущим сервером
     fun shareById(id: Long) = repository.shareById(id)
     fun removeById(id: Long) {
-        _data.postValue(FeedModel(loading = true))
-
         val currentPosts = _data.value?.posts ?: emptyList()
 
         repository.removeById(id, object : PostRepository.Callback<Long> {
