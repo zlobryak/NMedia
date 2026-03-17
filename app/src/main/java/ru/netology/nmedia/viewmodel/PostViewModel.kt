@@ -4,19 +4,29 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
+import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
 import ru.netology.nmedia.utils.SingleLiveEvent
 
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository: PostRepository = PostRepositoryImpl(
-    )
-    private val _data = MutableLiveData(FeedModel())
-    val data: LiveData<FeedModel>
-        get() = _data
+    private val repository: PostRepository =
+        PostRepositoryImpl(AppDb.getInstance(application).postDao)
+    private val _state = MutableLiveData(FeedModelState())
+    val state: LiveData<FeedModelState>
+        get() = _state
+
+    val data: LiveData<FeedModel> = repository.data.map {
+        FeedModel(it, it.isEmpty())
+    }
+
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
         get() = _postCreated
@@ -37,83 +47,64 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun load(fromRefresh: Boolean = false) {
         if (fromRefresh) _refreshing.value = true // Только для свайпа
 
-        _data.postValue(FeedModel(loading = true))
+        _state.postValue(FeedModelState(loading = true))
+        viewModelScope.launch {
+            try {
+                repository.getAllAsync()
+                _state.value = FeedModelState()
+            } catch (_: Throwable) {
+                _state.value = FeedModelState(error = true)
 
-        repository.getAllAsync(object : PostRepository.Callback<List<Post>> {
-            override fun onSuccess(data: List<Post>) {
-                _data.value = (FeedModel(posts = data, empty = data.isEmpty()))
             }
+        }
 
-            override fun onError(e: Throwable, statusCode: Int?) {
-                _errorEvent.value = ("Error code: $statusCode")
-                _data.postValue(FeedModel(loading = false, error = true))
-            }
-        })
         if (fromRefresh) _refreshing.value = false // Сброс только для свайпа
     }
 
 
     fun likeById(post: Post) {
-        val currentPosts = _data.value?.posts ?: emptyList()
-        repository.likeById(post, object : PostRepository.Callback<Post> {
-            override fun onSuccess(data: Post) {
-                //Перезаписываем в списке постов тот, отображение которого нужно обновить
-                val updatedPosts = currentPosts.map { currentPost ->
-                    if (currentPost.id == post.id) data else currentPost
-                }
-                _data.value = (FeedModel(posts = updatedPosts, empty = updatedPosts.isEmpty()))
-            }
+        viewModelScope.launch {
+            try {
+                repository.likeById(post.id)
 
-            override fun onError(e: Throwable, statusCode: Int?) {
-                _errorEvent.value = ("Error code: $statusCode, try later")
-                _data.postValue(FeedModel(posts = currentPosts, loading = false))
+            } catch (_: Throwable) {
+                _errorEvent.value = ("Error, try later")
             }
-        })
+        }
     }
 
 
     //Не работает с текущим сервером
-    fun shareById(id: Long) = repository.shareById(id)
+    fun shareById(id: Long) {
+        viewModelScope.launch {
+            try {
+                repository.shareById(id)
+            } catch (_: Throwable) {
+                _errorEvent.value = ("Error, try later")
+            }
+        }
+
+    }
+
     fun removeById(id: Long) {
-        val currentPosts = _data.value?.posts ?: emptyList()
-
-        repository.removeById(id, object : PostRepository.Callback<Long> {
-            override fun onSuccess(data: Long) {
-                // Удаляем пост из локального списка
-                val updatedPosts = currentPosts.filter { it.id != id }
-
-                // Обновляем UI: список + сброс загрузки
-                _data.value = FeedModel(
-                    posts = updatedPosts,
-                    empty = updatedPosts.isEmpty(),
-                    loading = false
-                )
-//                Покажем сообщение об удачном удалении поста
+        viewModelScope.launch {
+            try {
+                repository.removeById(id)
                 _successEvent.value = "Post deleted"
+            } catch (_: Throwable) {
+                _errorEvent.value = ("Error: post was not deleted")
             }
-
-            override fun onError(e: Throwable, statusCode: Int?) {
-                _errorEvent.value = ("Error code: $statusCode, post was not deleted")
-                _data.postValue(FeedModel(posts = currentPosts, loading = false))
-            }
-
-        })
+        }
     }
 
     fun save(post: Post) {
         //TODO проверить, работает ли сохранение вообще, возможно неверное обращение по API
-        _data.postValue(FeedModel(loading = true))
+        _state.postValue(FeedModelState(loading = true))
+        viewModelScope.launch {
+            repository.save(post)
+        }
 
-        repository.save(post, object : PostRepository.Callback<Post> {
-            override fun onSuccess(data: Post) {
-                _postCreated.postValue(Unit)
-            }
 
-            override fun onError(e: Throwable, statusCode: Int?) {
-                _errorEvent.value = ("Error code: $statusCode, post was not created")
-                _data.postValue(FeedModel(error = true))
-            }
-        })
     }
 }
 

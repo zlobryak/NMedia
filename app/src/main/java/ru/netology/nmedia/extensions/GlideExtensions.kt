@@ -5,7 +5,7 @@ import com.bumptech.glide.Glide
 import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
 
-private const val BASE_URL = "${BuildConfig.BASE_URL}/api/slow/"
+private const val BASE_URL = "${BuildConfig.BASE_URL}"
 
 fun ImageView.loadAvatar(authorAvatar: String?) {
     Glide.with(context)

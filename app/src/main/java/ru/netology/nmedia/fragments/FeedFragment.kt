@@ -123,13 +123,21 @@ class FeedFragment : Fragment() {
         // Наблюдаем за изменением списка постов в ViewModel и обновляем UI через submitList
         viewModel.data.observe(viewLifecycleOwner) { state ->
             adapter.submitList(state.posts)
-            binding.progress.isVisible = state.loading
-            binding.errorGroup.isVisible = state.error
             binding.empty.isVisible = state.empty
         }
 
-        // Обработаем нажатие на кнопку повторить
-        binding.retry.setOnClickListener { viewModel.load() }
+        viewModel.state.observe(viewLifecycleOwner) { state ->
+            binding.progress.isVisible = state.loading
+            if (state.error) {
+                //TODO пофиксить снек бар, лекция 47:00
+                Snackbar.make(binding.root, R.string.network_error, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.retry) {
+                        viewModel.load()
+                    }
+                    .show()
+            }
+        }
+
 
         // Обработка нажатия на FAB (кнопку "Новый пост") — переход к экрану создания поста без аргументов
         binding.addButton.setOnClickListener {
