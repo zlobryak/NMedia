@@ -18,7 +18,6 @@ class PostRepositoryImpl(
     override suspend fun getAllAsync() {
         val posts = PostApi.service.getAll()
         dao.insert(posts.map(PostEntity::fromDto))
-
     }
 
     override suspend fun save(post: Post): Post = PostApi.service.savePost(post)

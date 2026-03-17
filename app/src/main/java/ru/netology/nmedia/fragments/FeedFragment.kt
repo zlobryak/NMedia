@@ -129,7 +129,6 @@ class FeedFragment : Fragment() {
         viewModel.state.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading
             if (state.error) {
-                //TODO пофиксить снек бар, лекция 47:00
                 Snackbar.make(binding.root, R.string.network_error, Snackbar.LENGTH_LONG)
                     .setAction(R.string.retry) {
                         viewModel.load()
