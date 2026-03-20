@@ -22,9 +22,29 @@ class PostRepositoryImpl(
 
     override suspend fun save(post: Post): Post = PostApi.service.savePost(post)
 
-    override suspend fun removeById(id: Long) = PostApi.service.deletePost(id)
+    override suspend fun removeById(id: Long) {
+        PostApi.service.deletePost(id)
+        dao.removeById(id)
 
-    override suspend fun likeById(id: Long) = PostApi.service.like(id)
+        //TODO откат при ошибке и обновление отображения
+    }
+
+    override suspend fun likeById(id: Long, likedByMe: Boolean) {
+        //Вв dao уже реализован выбор между лайк и дизлайк в аннотации
+        dao.likeById(id)
+        //В API есть два вызова, между которыми нужно выбрать, в зависимости от того,
+        // был ли лайк уже поставлен автором поста
+        if (!likedByMe) {
+            PostApi.service.like(id)
+        }else{
+            PostApi.service.dislike(id)
+        }
+    }
+
+    override suspend fun restorePost(post: Post) {
+        // Полная перезапись поста старыми данными
+        dao.insert(PostEntity.fromDto(post))
+    }
 
     //Не работает с текущим сервером
     override suspend fun shareById(id: Long): Post {

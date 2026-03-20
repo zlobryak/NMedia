@@ -63,12 +63,14 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
 
     fun likeById(post: Post) {
+        val currentPosts = post.copy()
+
         viewModelScope.launch {
             try {
-                repository.likeById(post.id)
-
+                repository.likeById(post.id, post.likedByMe)
             } catch (_: Throwable) {
                 _errorEvent.value = ("Error, try later")
+                repository.restorePost(currentPosts) //Возвращаем старый пост, при ошибках
             }
         }
     }
@@ -83,7 +85,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _errorEvent.value = ("Error, try later")
             }
         }
-
     }
 
     fun removeById(id: Long) {
@@ -103,8 +104,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository.save(post)
         }
-
-
     }
 }
 
