@@ -93,7 +93,7 @@ class NewPostFragment : Fragment() {
 
         //Наблюдаем за появлением нового поста и только после этого возвращаемся в ленту
         viewModel.postCreated.observe(viewLifecycleOwner) {
-            viewModel.load() //В тоже время запросим новые посты
+            viewModel.load() //В то же время запросим новые посты
             findNavController().navigateUp()
         }
 

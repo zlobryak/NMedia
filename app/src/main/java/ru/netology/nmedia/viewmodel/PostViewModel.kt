@@ -54,7 +54,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _state.value = FeedModelState()
             } catch (_: Throwable) {
                 _state.value = FeedModelState(error = true)
-
             }
         }
 
@@ -63,26 +62,14 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
 
     fun likeById(post: Post) {
-        val currentPosts = post.copy()
+        val currentPosts = post.copy() //Сохраняем копию поста, на случай ошибок
 
         viewModelScope.launch {
             try {
                 repository.likeById(post.id, post.likedByMe)
             } catch (_: Throwable) {
-                _errorEvent.value = ("Error, try later")
+                _state.value = FeedModelState(error = true)
                 repository.restorePost(currentPosts) //Возвращаем старый пост, при ошибках
-            }
-        }
-    }
-
-
-    //Не работает с текущим сервером
-    fun shareById(id: Long) {
-        viewModelScope.launch {
-            try {
-                repository.shareById(id)
-            } catch (_: Throwable) {
-                _errorEvent.value = ("Error, try later")
             }
         }
     }
@@ -93,16 +80,27 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 repository.removeById(id)
                 _successEvent.value = "Post deleted"
             } catch (_: Throwable) {
-                _errorEvent.value = ("Error: post was not deleted")
+                _state.value = FeedModelState(error = true)
             }
         }
     }
 
     fun save(post: Post) {
-        //TODO проверить, работает ли сохранение вообще, возможно неверное обращение по API
         _state.postValue(FeedModelState(loading = true))
         viewModelScope.launch {
             repository.save(post)
+        }
+    }
+
+    //Не работает с текущим сервером
+    fun shareById(id: Long) {
+
+        viewModelScope.launch {
+            try {
+                repository.shareById(id)
+            } catch (_: Throwable) {
+                _state.value = FeedModelState(error = true)
+            }
         }
     }
 }

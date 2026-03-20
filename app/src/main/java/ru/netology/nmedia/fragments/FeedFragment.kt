@@ -55,14 +55,14 @@ class FeedFragment : Fragment() {
                 }
 
                 /**
-                 * Обработка удаления поста — делегирует операцию ViewModel по ID.
+                 * Обработка удаления поста — делегирует операцию ViewModel.
                  */
                 override fun onRemove(post: Post) {
                     viewModel.removeById(post.id)
                 }
 
                 /**
-                 * Обработка лайка/дизлайка — передаёт ID поста в ViewModel.
+                 * Обработка лайка/дизлайка.
                  */
                 override fun onLike(post: Post) {
                     viewModel.likeById(post)
@@ -72,8 +72,8 @@ class FeedFragment : Fragment() {
                  * Обработка действия "Поделиться":
                  * — сначала фиксируется факт шеринга в ViewModel,
                  * — затем запускается системный диалог выбора приложения для отправки текста.
+                 * Не рботает в текущей версии сервера
                  */
-                //TODO не работает с текущим сервером
                 override fun onShare(post: Post) {
                     viewModel.shareById(post.id)
 

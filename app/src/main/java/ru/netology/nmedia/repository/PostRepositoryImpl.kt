@@ -24,9 +24,8 @@ class PostRepositoryImpl(
 
     override suspend fun removeById(id: Long) {
         PostApi.service.deletePost(id)
-        dao.removeById(id)
 
-        //TODO откат при ошибке и обновление отображения
+        dao.removeById(id)
     }
 
     override suspend fun likeById(id: Long, likedByMe: Boolean) {
