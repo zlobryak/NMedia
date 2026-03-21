@@ -7,12 +7,12 @@ import ru.netology.nmedia.dto.Post
 import kotlin.String
 
 @Entity
-class PostEntity (
-    @PrimaryKey(autoGenerate = true)
+data class PostEntity(
+    @PrimaryKey(autoGenerate = false)
     val id: Long,
     val author: String,
     var content: String?,
-    val published: String,
+    val published: String?,
     val likes: Int = 0,
     val shareCount: Int = 0,
     val likedByMe: Boolean = false,
@@ -22,16 +22,57 @@ class PostEntity (
     val videoPreviewText: String? = null,
     val videoViewsCount: Int? = null,
     val authorAvatar: String,
-    val attachment: Attachment? = null
-){
+    val attachment: Attachment? = null,
+    val isSynced: Boolean = false,
+    val syncStatus: SyncStatus = SyncStatus.PENDING
+) {
 
     //Для работы с локальной базой данных
     fun toDto() = Post(
-        id, author, content, published, likes, shareCount, likedByMe, views, videoUrl, previewImageUrl, videoPreviewText, videoViewsCount, authorAvatar, attachment
+        id,
+        author,
+        content,
+        published,
+        likes,
+        shareCount,
+        likedByMe,
+        views,
+        videoUrl,
+        previewImageUrl,
+        videoPreviewText,
+        videoViewsCount,
+        authorAvatar,
+        attachment,
+        isSynced,
+        syncStatus
     )
 
-    companion object{
-        fun fromDto(post: Post) = PostEntity(post.id, post.author, post.content, post.published, post.likes, post.shareCount, post.likedByMe, post.views, post.videoUrl, post.previewImageUrl, post.videoPreviewText, post.videoViewsCount, post.authorAvatar, post.attachment)
+    companion object {
+        fun fromDto(post: Post) = PostEntity(
+            post.id,
+            post.author,
+            post.content,
+            post.published,
+            post.likes,
+            post.shareCount,
+            post.likedByMe,
+            post.views,
+            post.videoUrl,
+            post.previewImageUrl,
+            post.videoPreviewText,
+            post.videoViewsCount,
+            post.authorAvatar,
+            post.attachment,
+            //Все пришедшие с сервера посты помечаются флагами и статусом
+            isSynced = true,
+            syncStatus = SyncStatus.SYNCED
+        )
 
+    }
+
+    enum class SyncStatus {
+            PENDING,
+        SYNCED,
+        FAILED
     }
 }

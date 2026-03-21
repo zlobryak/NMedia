@@ -33,4 +33,6 @@
     <string name="no_posts">No posts</string>
     <string name="network_error">Network error</string>
     <string name="retry">Retry</string>
+    <string name="sync_icon">Sync icon</string>
+    <string name="press_to_try_again">Press to try again</string>
 </resources>

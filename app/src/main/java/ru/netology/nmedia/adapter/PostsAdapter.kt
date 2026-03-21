@@ -10,8 +10,11 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import ru.netology.nmedia.R
+import ru.netology.nmedia.R.drawable.ic_download_done_24
+import ru.netology.nmedia.R.drawable.ic_sync_24
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.extensions.loadAttachment
 import ru.netology.nmedia.extensions.loadAvatar
 import ru.netology.nmedia.functions.counterFormatter
@@ -27,6 +30,7 @@ interface PostListener {
     fun onLike(post: Post)
     fun onShare(post: Post)
     fun onOpenVideo(url: String)
+    fun onRetrySync(post: Post)
 }
 
 /**
@@ -86,6 +90,37 @@ class PostViewHolder(
      */
     fun bind(post: Post) {
         binding.apply {
+            when (post.syncStatus) {
+
+                //Тут должен был быть селектор, но я потерял его при дебаге и не буду пока переделывать
+                PostEntity.SyncStatus.PENDING -> {
+                    icSync.setIconResource(ic_sync_24)
+                    icSync.text = "Uploading"
+                    icSync.isClickable = false
+                    icSync.refreshDrawableState()
+                }
+                PostEntity.SyncStatus.SYNCED -> {
+                    icSync.setIconResource(ic_download_done_24)
+                    icSync.text = ""
+                    icSync.isClickable = false
+                    icSync.refreshDrawableState()
+                }
+                PostEntity.SyncStatus.FAILED -> {
+                    icSync.setIconResource(R.drawable.ic_refresh_24)
+                    icSync.text = "Press to try again" //Переделать строку для возможности перевода
+                    icSync.isClickable = true
+                }
+
+            }
+
+
+            //Активируем нажатие на иконку для повторного сохранения
+            icSync.setOnClickListener {
+                if (post.syncStatus == PostEntity.SyncStatus.FAILED) {
+                    listener.onRetrySync(post)
+                }
+            }
+
             // Устанавливаем аватар автора через глайд
             avatar.loadAvatar(post.authorAvatar)
             // Имя автора поста

@@ -6,6 +6,7 @@ import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.PostEntity
+import ru.netology.nmedia.entity.PostEntity.SyncStatus
 
 class PostRepositoryImpl(
     private val dao: PostDao
@@ -20,12 +21,30 @@ class PostRepositoryImpl(
         dao.insert(posts.map(PostEntity::fromDto))
     }
 
-    override suspend fun save(post: Post): Post = PostApi.service.savePost(post)
+    override suspend fun save(post: Post) {
+        //Отправляем в бд временный пост с ID = 0L и флагом isSynced = false и статусом PENDING
+        dao.insert(
+            PostEntity.fromDto(post).copy(
+                id = 0L,
+                isSynced = false,
+                syncStatus = SyncStatus.PENDING
+            )
+        )
+        //Если получаем с сервера ответ - заменяем временный пост, для замены id и смены флагов(по умолчанию все прошедшие fromDto)
+        dao.insert(PostEntity.fromDto(PostApi.service.savePost(post)))
+        //Удаляем временный пост (надо реализовать точечное удаление поста, а не всех с этим статусом)
+        dao.removePending(SyncStatus.PENDING)
+
+    }
+
+    //Удалят несохраненный пост из базы данных при исключениях
+    override suspend fun removePending(post: Post) {
+        dao.removeById(post.id)
+    }
 
     override suspend fun removeById(id: Long) {
-        PostApi.service.deletePost(id)
-
         dao.removeById(id)
+        PostApi.service.deletePost(id)
     }
 
     override suspend fun likeById(id: Long, likedByMe: Boolean) {
@@ -35,7 +54,7 @@ class PostRepositoryImpl(
         // был ли лайк уже поставлен автором поста
         if (!likedByMe) {
             PostApi.service.like(id)
-        }else{
+        } else {
             PostApi.service.dislike(id)
         }
     }
@@ -48,5 +67,12 @@ class PostRepositoryImpl(
     //Не работает с текущим сервером
     override suspend fun shareById(id: Long): Post {
         TODO("Not yet implemented")
+    }
+
+    override suspend fun setFailed(post: Post) {
+        dao.insert(PostEntity.fromDto(post).copy(
+            isSynced = false,
+            syncStatus = SyncStatus.FAILED
+        ))
     }
 }

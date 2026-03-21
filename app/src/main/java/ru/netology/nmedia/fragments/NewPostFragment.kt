@@ -14,6 +14,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import ru.netology.nmedia.databinding.FragmentNewPostBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.utils.StringArg
 import ru.netology.nmedia.utils.PostArg
 import ru.netology.nmedia.viewmodel.PostViewModel
@@ -63,31 +64,33 @@ class NewPostFragment : Fragment() {
                 viewModel.save(
                     Post(
                         id = editPost.id,
-                        content = text,
                         author = editPost.author,
+                        content = text,
                         published = editPost.published,
-                        authorAvatar = "netology.jpg"
+                        authorAvatar = "netology.jpg",
+                        isSynced = editPost.isSynced,
+                        syncStatus = editPost.syncStatus,
                     )
                 )
-                // Раньше сразу возвращались в ленту, сейчас ждем создания поста на сервере
-//                findNavController().navigateUp()
+                findNavController().navigateUp()
             } else {
                 // Режим создания нового поста:
-                // — временный ID (0L) будет заменён в репозитории или ViewModel,
+                // — временный ID (0L) будет заменён на сервере,
                 // — автор и время публикации задаются заглушками (в реальном приложении — из профиля и текущего времени).
                 viewModel.save(
                     Post(
                         id = 0L,
-                        author = "Me",
+                        author = "Student",
+                        published = System.currentTimeMillis().toString(),
                         content = text,
-                        published = "1",
-                        authorAvatar = "netology.jpg"
+                        authorAvatar = "netology.jpg",
+                        isSynced = false,
+                        syncStatus = PostEntity.SyncStatus.PENDING
                     )
                 )
-                // Удаляем черновик после успешного сохранения (только в режиме создания)
+                // Удаляем черновик после сохранения (только в режиме создания)
                 sharedPreferences?.edit { remove(DRAFT_KEY) }
-                //раньше сразу возвращались в ленту, сейчас ждем создания поста на сервере
-                //findNavController().navigateUp()
+                findNavController().navigateUp()
             }
         }
 

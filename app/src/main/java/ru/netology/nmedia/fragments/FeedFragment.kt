@@ -58,7 +58,7 @@ class FeedFragment : Fragment() {
                  * Обработка удаления поста — делегирует операцию ViewModel.
                  */
                 override fun onRemove(post: Post) {
-                    viewModel.removeById(post.id)
+                    viewModel.removeById(post)
                 }
 
                 /**
@@ -101,6 +101,10 @@ class FeedFragment : Fragment() {
                 override fun onOpenVideo(url: String) {
                     val intent = Intent(Intent.ACTION_VIEW, url.toUri())
                     startActivity(intent)
+                }
+
+                override fun onRetrySync(post: Post) {
+                    viewModel.save(post)
                 }
             }
         )
@@ -157,7 +161,7 @@ class FeedFragment : Fragment() {
         viewModel.errorEvent.observe(viewLifecycleOwner) { errorMessage ->
             Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show()
         }
-        //Показываем сообщение при удчаном удалении
+        //Показываем сообщение при удачном удалении
         viewModel.successEvent.observe(viewLifecycleOwner) { message ->
             Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
         }
