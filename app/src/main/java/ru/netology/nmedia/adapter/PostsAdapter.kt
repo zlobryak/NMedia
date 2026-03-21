@@ -99,12 +99,14 @@ class PostViewHolder(
                     icSync.isClickable = false
                     icSync.refreshDrawableState()
                 }
+
                 PostEntity.SyncStatus.SYNCED -> {
                     icSync.setIconResource(ic_download_done_24)
                     icSync.text = ""
                     icSync.isClickable = false
                     icSync.refreshDrawableState()
                 }
+
                 PostEntity.SyncStatus.FAILED -> {
                     icSync.setIconResource(R.drawable.ic_refresh_24)
                     icSync.text = "Press to try again" //Переделать строку для возможности перевода
@@ -136,7 +138,10 @@ class PostViewHolder(
             // Форматируем и отображаем общее количество лайков
             icLikes.text = counterFormatter(post.likes)
             // Обработка нажатия на кнопку "лайк"
-            icLikes.setOnClickListener { listener.onLike(post) }
+            icLikes.setOnClickListener {
+                icLikes.isChecked = post.likedByMe
+                listener.onLike(post)
+            }
 
             // Обработка нажатия на кнопку "поделиться"
             icShare.setOnClickListener { listener.onShare(post) }

@@ -61,7 +61,18 @@ class PostRepositoryImpl(
 
     override suspend fun restorePost(post: Post) {
         // Полная перезапись поста старыми данными
-        dao.insert(PostEntity.fromDto(post))
+        if (post.isSynced) {
+            dao.insert(PostEntity.fromDto(post))
+        } else {
+            //Для постов, которые не синхронизированы, вернем флаг и исходное состояние.
+            dao.insert(
+                PostEntity.fromDto(post).copy(
+                    isSynced = false,
+                    syncStatus = post.syncStatus
+                )
+            )
+        }
+
     }
 
     //Не работает с текущим сервером
@@ -70,9 +81,11 @@ class PostRepositoryImpl(
     }
 
     override suspend fun setFailed(post: Post) {
-        dao.insert(PostEntity.fromDto(post).copy(
-            isSynced = false,
-            syncStatus = SyncStatus.FAILED
-        ))
+        dao.insert(
+            PostEntity.fromDto(post).copy(
+                isSynced = false,
+                syncStatus = SyncStatus.FAILED
+            )
+        )
     }
 }
