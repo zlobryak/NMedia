@@ -14,6 +14,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import ru.netology.nmedia.databinding.FragmentNewPostBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.utils.StringArg
 import ru.netology.nmedia.utils.PostArg
 import ru.netology.nmedia.viewmodel.PostViewModel
@@ -63,10 +64,12 @@ class NewPostFragment : Fragment() {
                 viewModel.save(
                     Post(
                         id = editPost.id,
-                        content = text,
                         author = editPost.author,
+                        content = text,
                         published = editPost.published,
-                        authorAvatar = "netology.jpg"
+                        authorAvatar = "netology.jpg",
+                        isSynced = editPost.isSynced,
+                        syncStatus = editPost.syncStatus
                     )
                 )
                 // Раньше сразу возвращались в ленту, сейчас ждем создания поста на сервере
@@ -81,7 +84,9 @@ class NewPostFragment : Fragment() {
                         author = "Me",
                         content = text,
                         published = "1",
-                        authorAvatar = "netology.jpg"
+                        authorAvatar = "netology.jpg",
+                        isSynced = false, //Флаг, сообщающий, что пост не синхронизирован с сервером
+                        syncStatus = PostEntity.SyncStatus.PENDING //Статус синхронизации с сервером
                     )
                 )
                 // Удаляем черновик после успешного сохранения (только в режиме создания)

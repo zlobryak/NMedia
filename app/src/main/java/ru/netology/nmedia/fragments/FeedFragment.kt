@@ -58,7 +58,7 @@ class FeedFragment : Fragment() {
                  * Обработка удаления поста — делегирует операцию ViewModel.
                  */
                 override fun onRemove(post: Post) {
-                    viewModel.removeById(post.id)
+                    viewModel.removeById(post)
                 }
 
                 /**
@@ -119,6 +119,14 @@ class FeedFragment : Fragment() {
 
         // Привязываем адаптер к RecyclerView
         binding.list.adapter = adapter
+
+        //Этот блок добавлен, чтобы решить проблему с подпрыгиванием и морганием постов
+        // при нажатии на кнопку лай
+        binding.list.itemAnimator?.let { animator ->
+            if (animator is androidx.recyclerview.widget.DefaultItemAnimator) {
+                animator.supportsChangeAnimations = false
+            }
+        }
 
         // Наблюдаем за изменением списка постов в ViewModel и обновляем UI через submitList
         viewModel.data.observe(viewLifecycleOwner) { state ->

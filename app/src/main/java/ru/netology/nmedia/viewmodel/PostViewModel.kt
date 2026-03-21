@@ -74,13 +74,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun removeById(id: Long) {
+    fun removeById(post: Post) {
+        val currentPost = post.copy()
         viewModelScope.launch {
             try {
-                repository.removeById(id)
+                repository.removeById(post.id)
                 _successEvent.value = "Post deleted"
             } catch (_: Throwable) {
                 _state.value = FeedModelState(error = true)
+                repository.restorePost(currentPost)
             }
         }
     }
@@ -88,13 +90,17 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun save(post: Post) {
         _state.postValue(FeedModelState(loading = true))
         viewModelScope.launch {
-            repository.save(post)
+            try {
+                repository.save(post)
+            }catch (_: Throwable){
+                _state.value = FeedModelState(error = true)
+                //TODO repository.removePending
+            }
         }
     }
 
     //Не работает с текущим сервером
     fun shareById(id: Long) {
-
         viewModelScope.launch {
             try {
                 repository.shareById(id)

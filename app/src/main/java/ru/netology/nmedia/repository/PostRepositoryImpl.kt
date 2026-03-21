@@ -20,12 +20,15 @@ class PostRepositoryImpl(
         dao.insert(posts.map(PostEntity::fromDto))
     }
 
-    override suspend fun save(post: Post): Post = PostApi.service.savePost(post)
+    override suspend fun save(post: Post) {
+        dao.save(PostEntity.fromDto(post))
+        PostApi.service.savePost(post)
+    }
 
     override suspend fun removeById(id: Long) {
-        PostApi.service.deletePost(id)
-
         dao.removeById(id)
+
+        PostApi.service.deletePost(id)
     }
 
     override suspend fun likeById(id: Long, likedByMe: Boolean) {
@@ -35,7 +38,7 @@ class PostRepositoryImpl(
         // был ли лайк уже поставлен автором поста
         if (!likedByMe) {
             PostApi.service.like(id)
-        }else{
+        } else {
             PostApi.service.dislike(id)
         }
     }

@@ -2,6 +2,7 @@ package ru.netology.nmedia.dto
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import ru.netology.nmedia.entity.PostEntity
 
 
 @Parcelize
@@ -19,5 +20,7 @@ data class Post(
     val videoPreviewText: String? = null,
     val videoViewsCount: Int? = null,
     val authorAvatar: String,
-    val attachment: Attachment? = null
+    val attachment: Attachment? = null,
+    val isSynced: Boolean? = null,
+    val syncStatus: PostEntity.SyncStatus? = null
 ) : Parcelable

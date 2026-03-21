@@ -101,7 +101,7 @@ class PostFragment : Fragment() {
                                 when (menuItem.itemId) {
                                     R.id.remove -> {
                                         // Удаляем пост по ID
-                                        viewModel.removeById(currentPost.id)
+                                        viewModel.removeById(currentPost)
                                         // После удаления фрагмент закроется автоматически при возврате
                                         true
                                     }
