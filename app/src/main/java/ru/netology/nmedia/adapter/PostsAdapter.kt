@@ -95,7 +95,7 @@ class PostViewHolder(
                 //Тут должен был быть селектор, но я потерял его при дебаге и не буду пока переделывать
                 PostEntity.SyncStatus.PENDING -> {
                     icSync.setIconResource(ic_sync_24)
-                    icSync.text = "Uploading"
+                    icSync.text = "Uploading" //Добавить строку в ресурсы
                     icSync.isClickable = false
                     icSync.refreshDrawableState()
                 }
