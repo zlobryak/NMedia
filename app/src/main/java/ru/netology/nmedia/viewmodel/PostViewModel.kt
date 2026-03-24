@@ -106,7 +106,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     //Не работает с текущим сервером
     fun shareById(id: Long) {
-
         viewModelScope.launch {
             try {
                 repository.shareById(id)
