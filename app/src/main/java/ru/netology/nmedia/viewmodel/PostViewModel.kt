@@ -62,39 +62,44 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
 
     fun likeById(post: Post) {
-        val currentPosts = post.copy() //Сохраняем копию поста, на случай ошибок
+        val currentPost = post.copy() //Сохраняем копию поста, на случай ошибок
 
         viewModelScope.launch {
             try {
-                repository.likeById(post.id, post.likedByMe)
+                if (post.isSynced) {
+                    repository.likeById(post.id, post.likedByMe)
+                } else {
+                    _errorEvent.value = "Post is not synchronised, try later"
+                    repository.restorePost(currentPost)
+                }
             } catch (_: Throwable) {
                 _state.value = FeedModelState(error = true)
-                repository.restorePost(currentPosts) //Возвращаем старый пост, при ошибках
+                repository.restorePost(currentPost) //Возвращаем старый пост, при ошибках
             }
+
         }
     }
 
     fun removeById(post: Post) {
-        val currentPost = post.copy()
+        val currentPosts = post.copy()
         viewModelScope.launch {
             try {
                 repository.removeById(post.id)
                 _successEvent.value = "Post deleted"
             } catch (_: Throwable) {
                 _state.value = FeedModelState(error = true)
-                repository.restorePost(currentPost)
+                repository.restorePost(currentPosts)
             }
         }
     }
 
     fun save(post: Post) {
-        _state.postValue(FeedModelState(loading = true))
         viewModelScope.launch {
             try {
                 repository.save(post)
-            }catch (_: Throwable){
+            } catch (_: Throwable) {
                 _state.value = FeedModelState(error = true)
-                //TODO repository.removePending
+                repository.setFailed(post)
             }
         }
     }

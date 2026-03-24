@@ -78,11 +78,11 @@
         android:contentDescription="@string/vide_preview"
         android:scaleType="fitCenter"
         android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/barrier2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/content"
-        app:layout_constraintBottom_toTopOf="@id/barrier2"
-        tools:srcCompat="@drawable/podcast"/>
+        tools:srcCompat="@drawable/podcast" />
 
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/barrier2"
@@ -134,10 +134,10 @@
         android:layout_height="wrap_content"
         android:contentDescription="@string/play_button"
         app:icon="@drawable/play_arrow_24"
+        app:layout_constraintBottom_toBottomOf="@id/video_preview"
         app:layout_constraintEnd_toEndOf="@id/video_preview"
         app:layout_constraintStart_toStartOf="@id/video_preview"
-        app:layout_constraintBottom_toBottomOf="@id/video_preview"
-        app:layout_constraintTop_toTopOf="@id/video_preview"/>
+        app:layout_constraintTop_toTopOf="@id/video_preview" />
 
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/barrier3"
@@ -170,6 +170,21 @@
         app:layout_constraintStart_toEndOf="@id/ic_likes"
         app:layout_constraintTop_toTopOf="@id/ic_likes"
         tools:text="10" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/ic_sync"
+        style="@style/Widget.AppCompat.StandardButtonWithText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checkable="false"
+        android:clickable="false"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/sync_icon"
+        app:icon="@drawable/ic_sync_selector"
+        app:layout_constraintBottom_toBottomOf="@id/ic_likes"
+        app:layout_constraintEnd_toStartOf="@id/ic_views"
+        app:layout_constraintStart_toEndOf="@id/ic_share"
+        app:layout_constraintTop_toTopOf="@id/ic_likes" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/ic_views"

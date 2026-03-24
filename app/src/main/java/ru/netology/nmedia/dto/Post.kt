@@ -10,7 +10,7 @@ data class Post(
     val id: Long,
     val author: String,
     var content: String?,
-    val published: String,
+    val published: String? = null, //Сервер возвращает время создания
     val likes: Int = 0,
     val shareCount: Int = 0,
     val likedByMe: Boolean = false,
@@ -21,6 +21,6 @@ data class Post(
     val videoViewsCount: Int? = null,
     val authorAvatar: String,
     val attachment: Attachment? = null,
-    val isSynced: Boolean? = null,
-    val syncStatus: PostEntity.SyncStatus? = null
+    val isSynced: Boolean,
+    val syncStatus: PostEntity.SyncStatus
 ) : Parcelable

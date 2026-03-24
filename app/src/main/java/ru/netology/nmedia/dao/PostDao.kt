@@ -20,7 +20,7 @@ import ru.netology.nmedia.entity.PostEntity
 
 @Dao
 interface PostDao {
-    @Query("SELECT * FROM PostEntity ORDER BY id  DESC")
+    @Query("SELECT * FROM PostEntity ORDER BY published DESC, id DESC")
     fun getAll(): LiveData<List<PostEntity>>
 
     @Insert(onConflict = REPLACE)
@@ -47,6 +47,9 @@ interface PostDao {
 
     @Query("DELETE FROM PostEntity WHERE id = :id")
     suspend fun removeById(id: Long)
+
+    @Query("DELETE FROM PostEntity WHERE syncStatus = :status")
+    suspend fun removePending(status: PostEntity.SyncStatus)
 
     @Query("UPDATE PostEntity SET shareCount = shareCount + 1 WHERE id = :id")
     suspend fun shareById(id: Long)

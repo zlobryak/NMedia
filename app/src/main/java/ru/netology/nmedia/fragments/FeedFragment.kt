@@ -102,6 +102,10 @@ class FeedFragment : Fragment() {
                     val intent = Intent(Intent.ACTION_VIEW, url.toUri())
                     startActivity(intent)
                 }
+
+                override fun onRetrySync(post: Post) {
+                    viewModel.save(post)
+                }
             }
         )
 
@@ -165,7 +169,7 @@ class FeedFragment : Fragment() {
         viewModel.errorEvent.observe(viewLifecycleOwner) { errorMessage ->
             Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show()
         }
-        //Показываем сообщение при удчаном удалении
+        //Показываем сообщение при удачном удалении
         viewModel.successEvent.observe(viewLifecycleOwner) { message ->
             Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
         }

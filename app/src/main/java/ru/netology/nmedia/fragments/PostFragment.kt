@@ -12,11 +12,15 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
+import ru.netology.nmedia.R.drawable.ic_download_done_24
+import ru.netology.nmedia.R.drawable.ic_sync_24
 import ru.netology.nmedia.databinding.FragmentPostBinding
+import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.fragments.NewPostFragment.Companion.postArg
 import ru.netology.nmedia.functions.counterFormatter
 import ru.netology.nmedia.viewmodel.PostViewModel
 import kotlin.getValue
+import timber.log.Timber
 
 /**
  * Фрагмент для просмотра отдельного поста в полноэкранном или детальном режиме.
@@ -24,6 +28,11 @@ import kotlin.getValue
  * лайк, репост, редактирование, удаление.
  */
 class PostFragment : Fragment() {
+
+    companion object {
+        private const val TAG = "PostFragment" // Тег для фильтрации в Logcat
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -43,6 +52,11 @@ class PostFragment : Fragment() {
             val currentPost = state.posts.find { it.id == currentPostId }
 
             if (currentPost != null) {
+                Timber.tag(TAG).d("=== Render Post ID: ${currentPost.id} ===")
+                Timber.tag(TAG).d("  • isSynced:    ${currentPost.isSynced}")
+                Timber.tag(TAG).d("  • syncStatus:  ${currentPost.syncStatus}")
+                Timber.d("Post ID: ${currentPost.id}, synced: ${currentPost.isSynced}")
+
                 // Привязываем данные поста к UI-элементам карточки
                 with(binding.postCard) {
                     // Фиксированный аватар автора (в реальном приложении — из URL или профиля)
@@ -61,17 +75,36 @@ class PostFragment : Fragment() {
                     icLikes.text = counterFormatter(currentPost.likes)
                     // Форматирование количества
                     icViews.text = counterFormatter(currentPost.views)
+                    //Иконка синхронизации
+                    //Вообще я сделал selector, но пока разбирался с косяками, я его где-то потерял и не буду переделывать)))
+                    when (currentPost.syncStatus) {
+                        PostEntity.SyncStatus.PENDING -> icSync.setIconResource(ic_sync_24)
+                        PostEntity.SyncStatus.SYNCED -> icSync.setIconResource(ic_download_done_24)
+                        PostEntity.SyncStatus.FAILED -> icSync.setIconResource(R.drawable.ic_refresh_24)
+                    }
+
                 }
+
             } else {
                 //Если пост удален вернемся назад в ленту
                 findNavController().navigateUp()
             }
+
             //Обработаем нажатия на кнопки
             if (currentPost != null) {
                 with(binding.postCard) {
+                    //Активируем нажатие на иконку для повторного сохранения
+                    icSync.setOnClickListener {
+                        if (currentPost.syncStatus == PostEntity.SyncStatus.FAILED) {
+                            icSync.text = getString(R.string.press_to_try_again)
+                            viewModel.save(currentPost)
+                        }
+                    }
+
                     // Обработка нажатия на кнопку "лайк" — переключает состояние через ViewModel
                     icLikes.setOnClickListener {
                         viewModel.likeById(currentPost)
+                        Timber.d("Like pressed")
                     }
 
                     // Обработка нажатия на кнопку "поделиться" — увеличивает счётчик репостов в ViewModel

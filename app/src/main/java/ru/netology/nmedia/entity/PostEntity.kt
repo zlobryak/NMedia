@@ -7,12 +7,12 @@ import ru.netology.nmedia.dto.Post
 import kotlin.String
 
 @Entity
-class PostEntity(
-    @PrimaryKey(autoGenerate = true)
+data class PostEntity(
+    @PrimaryKey(autoGenerate = false)
     val id: Long,
     val author: String,
     var content: String?,
-    val published: String,
+    val published: String?,
     val likes: Int = 0,
     val shareCount: Int = 0,
     val likedByMe: Boolean = false,
@@ -23,8 +23,8 @@ class PostEntity(
     val videoViewsCount: Int? = null,
     val authorAvatar: String,
     val attachment: Attachment? = null,
-    val isSynced: Boolean? = false,
-    val syncStatus: SyncStatus? = SyncStatus.PENDING
+    val isSynced: Boolean = false,
+    val syncStatus: SyncStatus = SyncStatus.PENDING
 ) {
 
     //Для работы с локальной базой данных
@@ -63,14 +63,15 @@ class PostEntity(
             post.videoViewsCount,
             post.authorAvatar,
             post.attachment,
-            post.isSynced,
-            post.syncStatus
+            //Все пришедшие с сервера посты помечаются флагами и статусом
+            isSynced = true,
+            syncStatus = SyncStatus.SYNCED
         )
 
     }
 
     enum class SyncStatus {
-        PENDING,
+            PENDING,
         SYNCED,
         FAILED
     }

@@ -29,4 +29,6 @@
     <string name="no_posts">Нет постов</string>
     <string name="network_error">Ошибка сети</string>
     <string name="retry">Повторить</string>
+    <string name="sync_icon">Синхроизировано</string>
+    <string name="press_to_try_again">Повторить отправку</string>
 </resources>

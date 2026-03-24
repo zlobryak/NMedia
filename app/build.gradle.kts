@@ -82,4 +82,5 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.glide)
     implementation(libs.logging.interceptor)
+    implementation(libs.timber)
 }
