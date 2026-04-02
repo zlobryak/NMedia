@@ -1,7 +1,7 @@
 package ru.netology.nmedia.repository
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.map
+
+import kotlinx.coroutines.flow.map
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
@@ -11,14 +11,40 @@ import ru.netology.nmedia.entity.PostEntity.SyncStatus
 class PostRepositoryImpl(
     private val dao: PostDao
 ) : PostRepository {
-
-    override val data: LiveData<List<Post>> = dao.getAll().map { posts ->
-        posts.map { it.toDto() }
+    override suspend fun getLastPostId(): Long {
+        return dao.getMaxId()
     }
 
-    override suspend fun getAllAsync() {
+
+    override val data = dao.getAllVisible().map { entities -> entities.map { it.toDto() } }
+
+    override suspend fun fetchNewPosts(lastKnownId: Long): Int {
+        val newerPosts = PostApi.service.getNewer(lastKnownId)
+        // Новые посты добавляются с isVisible=false (по умолчанию в fromDto)
+        dao.insert(newerPosts.map(PostEntity::fromDto))
+        return newerPosts.size
+    }
+
+    //Метод для первоначальной загрузки списка постов. Все полученные посты сразу отображаются в ленте.
+    override suspend fun getAllInit(): Long {
         val posts = PostApi.service.getAll()
-        dao.insert(posts.map(PostEntity::fromDto))
+        dao.insert(posts.map { post ->
+            PostEntity.fromDto(post).copy(isVisible = true)
+        })
+        return posts.maxOfOrNull { it.id } ?: 0L
+    }
+
+    override suspend fun getHiddenPostsCount(): Int {
+        return dao.countHiddenPosts()
+    }
+
+    override suspend fun syncNewer() {
+        //Перед запросом списка постов, проверим последний известный ID и запросим
+        //только посты с id выше через getNewer. Если база данных пустая - запросятся все
+        val posts = PostApi.service.getNewer(dao.getMaxId() ?: 0L)
+        dao.insert(posts.map { post ->
+            PostEntity.fromDto(post)
+        })
     }
 
     override suspend fun save(post: Post) {
@@ -73,6 +99,11 @@ class PostRepositoryImpl(
             )
         }
 
+    }
+
+    //В локальной базе данных объявим все невидимые посты видимыми
+    override suspend fun showAllHiddenPosts() {
+        dao.showAllHiddenPosts()
     }
 
     //Не работает с текущим сервером

@@ -24,7 +24,8 @@ data class PostEntity(
     val authorAvatar: String,
     val attachment: Attachment? = null,
     val isSynced: Boolean = false,
-    val syncStatus: SyncStatus = SyncStatus.PENDING
+    val syncStatus: SyncStatus = SyncStatus.PENDING,
+    val isVisible: Boolean = false
 ) {
 
     //Для работы с локальной базой данных
@@ -44,10 +45,12 @@ data class PostEntity(
         authorAvatar,
         attachment,
         isSynced,
-        syncStatus
+        syncStatus,
+        isVisible
     )
 
     companion object {
+        //Все посты из базы данных проходят этот метод для преобразования в PostEntity
         fun fromDto(post: Post) = PostEntity(
             post.id,
             post.author,
@@ -65,13 +68,14 @@ data class PostEntity(
             post.attachment,
             //Все пришедшие с сервера посты помечаются флагами и статусом
             isSynced = true,
-            syncStatus = SyncStatus.SYNCED
+            syncStatus = SyncStatus.SYNCED,
+            post.isVisible
         )
 
     }
 
     enum class SyncStatus {
-            PENDING,
+        PENDING,
         SYNCED,
         FAILED
     }

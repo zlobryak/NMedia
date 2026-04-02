@@ -12,8 +12,8 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Job
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.PostListener
 import ru.netology.nmedia.adapter.PostsAdapter
@@ -27,6 +27,8 @@ import ru.netology.nmedia.viewmodel.PostViewModel
  * и управляет навигацией к экрану создания/редактирования поста.
  */
 class FeedFragment : Fragment() {
+
+    private var pollingJob: Job? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -72,7 +74,7 @@ class FeedFragment : Fragment() {
                  * Обработка действия "Поделиться":
                  * — сначала фиксируется факт шеринга в ViewModel,
                  * — затем запускается системный диалог выбора приложения для отправки текста.
-                 * Не рботает в текущей версии сервера
+                 * Не работает в текущей версии сервера
                  */
                 override fun onShare(post: Post) {
                     viewModel.shareById(post.id)
@@ -109,17 +111,18 @@ class FeedFragment : Fragment() {
             }
         )
 
-        // Отслеживаем добавление новых элементов в начало списка:
-        // если новые посты добавлены в позицию 0 — плавно прокручиваем список вверх
-        adapter.registerAdapterDataObserver(
-            object : RecyclerView.AdapterDataObserver() {
-                override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                    if (positionStart == 0) {
-                        binding.list.smoothScrollToPosition(0)
-                    }
-                }
-            }
-        )
+//        // Отслеживаем добавление новых элементов в начало списка:
+//        // если новые посты добавлены в позицию 0 — плавно прокручиваем список вверх
+        //Устаревшая логика поведения, теперь будет появляться плашка, нажатие на которую будет прокручивать ленту
+//        adapter.registerAdapterDataObserver(
+//            object : RecyclerView.AdapterDataObserver() {
+//                override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+//                    if (positionStart == 0) {
+//                        binding.list.smoothScrollToPosition(0)
+//                    }
+//                }
+//            }
+//        )
 
         // Привязываем адаптер к RecyclerView
         binding.list.adapter = adapter
@@ -138,6 +141,7 @@ class FeedFragment : Fragment() {
             binding.empty.isVisible = state.empty
         }
 
+        //Загрузка всего списка постов при исключениях
         viewModel.state.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading
             if (state.error) {
@@ -148,7 +152,17 @@ class FeedFragment : Fragment() {
                     .show()
             }
         }
+        //Показываем плашку, если есть новые посты
+        viewModel.hiddenPostsCount.observe(viewLifecycleOwner) { count ->
+            binding.newPostsChip.isVisible = count > 0
+            println(count)
+        }
 
+        //Обработка нажатия на плашку для плавной прокрутки новых постов
+        binding.newPostsChip.setOnClickListener {
+            binding.list.smoothScrollToPosition(0)
+            viewModel.showHiddenPosts()
+        }
 
         // Обработка нажатия на FAB (кнопку "Новый пост") — переход к экрану создания поста без аргументов
         binding.addButton.setOnClickListener {
@@ -178,5 +192,12 @@ class FeedFragment : Fragment() {
         viewModel.load(fromRefresh = false)
 
         return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        val vm: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
+        vm.stopBackgroundSync()
+        pollingJob?.cancel()
     }
 }

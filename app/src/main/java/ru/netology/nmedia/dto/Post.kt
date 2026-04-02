@@ -22,5 +22,6 @@ data class Post(
     val authorAvatar: String,
     val attachment: Attachment? = null,
     val isSynced: Boolean,
-    val syncStatus: PostEntity.SyncStatus
+    val syncStatus: PostEntity.SyncStatus,
+    val isVisible: Boolean = false
 ) : Parcelable

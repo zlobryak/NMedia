@@ -1,18 +1,26 @@
 package ru.netology.nmedia.repository
 
-import androidx.lifecycle.LiveData
+import kotlinx.coroutines.flow.Flow
 import ru.netology.nmedia.dto.Post
 
 interface PostRepository {
-    val data: LiveData<List<Post>>
+    val data: Flow<List<Post>>
     suspend fun likeById(id: Long, likedByMe: Boolean)
     suspend fun removeById(id: Long)
     suspend fun save(post: Post)
-    suspend fun getAllAsync()
+    suspend fun syncNewer()
     suspend fun restorePost(post: Post)
     suspend fun removePending(post: Post)
+    suspend fun setFailed(post: Post)
 
     //Текущая версия сервера не поддерживает этот функционал
     suspend fun shareById(id: Long): Post
-    suspend fun setFailed(post: Post)
+
+    suspend fun getAllInit(): Long
+    suspend fun getHiddenPostsCount(): Int
+    suspend fun showAllHiddenPosts()
+    suspend fun fetchNewPosts(lastKnownId: Long): Int
+
+    suspend fun getLastPostId(): Long
+
 }

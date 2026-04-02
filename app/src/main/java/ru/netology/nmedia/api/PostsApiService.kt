@@ -2,7 +2,6 @@ package ru.netology.nmedia.api
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
@@ -51,6 +50,10 @@ interface PostsApiService {
 
     @DELETE("posts/{id}/likes")
     suspend fun dislike(@Path("id") id: Long): Post
+
+
+    @GET("posts/{id}/newer")
+    suspend fun getNewer(@Path("id") id: Long): List<Post>
 
 }
 
