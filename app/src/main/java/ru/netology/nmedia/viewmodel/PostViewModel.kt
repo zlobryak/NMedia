@@ -20,7 +20,6 @@ import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
 import ru.netology.nmedia.utils.SingleLiveEvent
-import timber.log.Timber
 
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
