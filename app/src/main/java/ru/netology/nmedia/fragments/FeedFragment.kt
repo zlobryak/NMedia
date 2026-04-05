@@ -160,8 +160,12 @@ class FeedFragment : Fragment() {
 
         //Обработка нажатия на плашку для плавной прокрутки новых постов
         binding.newPostsChip.setOnClickListener {
-            binding.list.smoothScrollToPosition(0)
             viewModel.showHiddenPosts()
+
+            //Тут важен порядок отрисовки. Прокрутка вверх должна происходит после тог, как потсы для отображения будут помечены как видимые
+            binding.list.post {
+                binding.list.smoothScrollToPosition(0)
+            }
         }
 
         // Обработка нажатия на FAB (кнопку "Новый пост") — переход к экрану создания поста без аргументов
@@ -189,6 +193,8 @@ class FeedFragment : Fragment() {
         }
 
         // Первоначальная загрузка БЕЗ индикатора свайпа
+        //В прошлой версии в этом месте вызывался список всех постов при запуске приложения.
+        //Теперь запрос всех постов и фоновая синхронизация запускаются в init
 //        viewModel.load(fromRefresh = false)
 
         return binding.root
