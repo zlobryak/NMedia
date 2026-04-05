@@ -26,7 +26,7 @@ class PostRepositoryImpl(
     }
 
     //Метод для первоначальной загрузки списка постов. Все полученные посты сразу отображаются в ленте.
-    override suspend fun getAllInit(): Long {
+    override suspend fun getAllVisible(): Long {
         val posts = PostApi.service.getAll()
         dao.insert(posts.map { post ->
             PostEntity.fromDto(post).copy(isVisible = true)

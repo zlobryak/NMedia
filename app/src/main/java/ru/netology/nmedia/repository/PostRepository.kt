@@ -16,7 +16,7 @@ interface PostRepository {
     //Текущая версия сервера не поддерживает этот функционал
     suspend fun shareById(id: Long): Post
 
-    suspend fun getAllInit(): Long
+    suspend fun getAllVisible(): Long
     suspend fun getHiddenPostsCount(): Int
     suspend fun showAllHiddenPosts()
     suspend fun fetchNewPosts(lastKnownId: Long): Int

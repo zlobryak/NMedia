@@ -107,12 +107,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     init {
         viewModelScope.launch {
             try {
-                Timber.tag("SyncDebug").d("Init: Start getAllInit")
-                val lastId = repository.getAllInit() //Получим для старта количество постов, чтобы отложить запуск процесса фоновой синхронизации.
-                Timber.tag("SyncDebug").d("Init: Received lastId=$lastId")
+                val lastId = repository.getAllVisible() //Получим для старта количество постов, чтобы отложить запуск процесса фоновой синхронизации.
                 _state.value = FeedModelState()
                 startBackgroundSync(lastId) //Поставим результат стартового запроса для запуска фоновой синхронизации.
-                Timber.tag("SyncDebug").d("Init: Started background sync")
             } catch (_: Throwable) {
                 _state.value = FeedModelState(error = true)
             }
@@ -122,12 +119,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun load(fromRefresh: Boolean = false) {
         if (fromRefresh) _refreshing.value = true // Только для свайпа
 
-
-
         _state.postValue(FeedModelState(loading = true))
         viewModelScope.launch {
             try {
-                repository.syncNewer()
+                repository.getAllVisible()
                 _state.value = FeedModelState()
             } catch (_: Throwable) {
                 _state.value = FeedModelState(error = true)

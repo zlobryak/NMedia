@@ -20,6 +20,7 @@ import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.viewmodel.PostViewModel
+import timber.log.Timber
 
 /**
  * Фрагмент ленты постов.
@@ -189,7 +190,7 @@ class FeedFragment : Fragment() {
         }
 
         // Первоначальная загрузка БЕЗ индикатора свайпа
-        viewModel.load(fromRefresh = false)
+//        viewModel.load(fromRefresh = false)
 
         return binding.root
     }
