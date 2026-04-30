@@ -5,13 +5,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
@@ -23,7 +21,6 @@ import ru.netology.nmedia.utils.SingleLiveEvent
 
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
-    private var pollingJob: Job? = null
     private val repository: PostRepository =
         PostRepositoryImpl(AppDb.getInstance(application).postDao)
     private val _state = MutableLiveData(FeedModelState())
@@ -36,27 +33,14 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         .catch { it.printStackTrace() }
         .asLiveData(Dispatchers.Default)
 
-
-
+    val newerCount: LiveData<Int> = data.switchMap {
+        repository.getNewerCount(it.posts.firstOrNull()?.id ?: 0L)
+            .catch { e -> e.printStackTrace() }
+            .asLiveData(Dispatchers.Default)
+    }
 
     private val _hiddenPostsCount = MutableLiveData<Int>(0)
     val hiddenPostsCount: LiveData<Int> = _hiddenPostsCount
-
-    fun updateHiddenPostsCount() {
-        viewModelScope.launch {
-            try {
-                val count = repository.getHiddenPostsCount()
-                _hiddenPostsCount.value = count
-            } catch (_: Exception) {
-                _hiddenPostsCount.value = 0
-                _errorEvent.value = "DB error"
-            }
-        }
-    }
-
-    private var backgroundSyncStarted = false
-    // Запуск фоновой синхронизации
-
 
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
@@ -71,48 +55,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val _successEvent = SingleLiveEvent<String>()
     val successEvent: LiveData<String> = _successEvent
 
-    fun startBackgroundSync(initialLastId: Long) {
-        //Защита от повторного запуска
-        if (backgroundSyncStarted) return
-        backgroundSyncStarted = true
-
-        pollingJob?.cancel()  // Отменяем предыдущий, если есть
-
-        pollingJob = viewModelScope.launch {
-            var lastId = initialLastId
-            while (isActive) {
-                delay(10_000)
-                try {
-                    // Загружаем новые посты
-                    val fetched = repository.fetchNewPosts(lastId)
-
-                    // Если что-то загрузили — обновляем lastId и счётчик
-                    if (fetched > 0) {
-                        lastId = repository.getLastPostId()
-                        updateHiddenPostsCount()
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
-    }
-
-    fun stopBackgroundSync() {
-        pollingJob?.cancel()
-        backgroundSyncStarted = false
-    }
-
     init {
-        viewModelScope.launch {
-            try {
-                val lastId = repository.getAllVisible() //Получим для старта количество постов, чтобы отложить запуск процесса фоновой синхронизации.
-                _state.value = FeedModelState()
-                startBackgroundSync(lastId) //Поставим результат стартового запроса для запуска фоновой синхронизации.
-            } catch (_: Throwable) {
-                _state.value = FeedModelState(error = true)
-            }
-        }
+        load()
     }
 
     fun load(fromRefresh: Boolean = false) {

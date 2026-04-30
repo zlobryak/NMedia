@@ -103,8 +103,8 @@
         android:layout_gravity="top|center"
         android:clickable="true"
         android:focusable="true"
-        android:text="@string/new_posts"
-        android:visibility="visible"
+        android:text= "@string/new_posts"
+        android:visibility="invisible"
         app:chipBackgroundColor="@android:color/darker_gray"
         app:chipIcon="@drawable/ic_arrow_upward_24dp"
         app:ensureMinTouchTargetSize="true" />

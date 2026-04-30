@@ -1,28 +1,49 @@
 package ru.netology.nmedia.repository
 
 
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.PostEntity.SyncStatus
+import ru.netology.nmedia.entity.toEntity
+import ru.netology.nmedia.error.ApiError
+import ru.netology.nmedia.error.AppError
+import kotlin.collections.map
 
 class PostRepositoryImpl(
     private val dao: PostDao
 ) : PostRepository {
+
     override suspend fun getLastPostId(): Long {
         return dao.getMaxId()
     }
 
+    override fun getNewerCount(id: Long): Flow<Int> = flow {
+        while (true) {
+            delay(10_000L)
+            val response = PostApi.service.getNewer(id)
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            dao.insert(body.toEntity())
+            emit(body.size)
+        }
+    }.catch { e -> throw AppError.from(e) }
 
     override val data = dao.getAllVisible().map { entities -> entities.map { it.toDto() } }
 
     override suspend fun fetchNewPosts(lastKnownId: Long): Int {
-        val newerPosts = PostApi.service.getNewer(lastKnownId)
+        val response = PostApi.service.getNewer(lastKnownId)
+        val body = response.body() ?: throw ApiError(response.code(), response.message())
+
         // Новые посты добавляются с isVisible=false (по умолчанию в fromDto)
-        dao.insert(newerPosts.map(PostEntity::fromDto))
-        return newerPosts.size
+        dao.insert(body.toEntity())
+        return body.size
     }
 
     //Метод для первоначальной загрузки списка постов. Все полученные посты сразу отображаются в ленте.
@@ -36,15 +57,6 @@ class PostRepositoryImpl(
 
     override suspend fun getHiddenPostsCount(): Int {
         return dao.countHiddenPosts()
-    }
-
-    override suspend fun syncNewer() {
-        //Перед запросом списка постов, проверим последний известный ID и запросим
-        //только посты с id выше через getNewer. Если база данных пустая - запросятся все
-        val posts = PostApi.service.getNewer(dao.getMaxId() ?: 0L)
-        dao.insert(posts.map { post ->
-            PostEntity.fromDto(post)
-        })
     }
 
     override suspend fun save(post: Post) {

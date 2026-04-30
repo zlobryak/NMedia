@@ -80,3 +80,5 @@ data class PostEntity(
         FAILED
     }
 }
+
+fun List<Post>.toEntity(): List<PostEntity> = map(PostEntity::fromDto)

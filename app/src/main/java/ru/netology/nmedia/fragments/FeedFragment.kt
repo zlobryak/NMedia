@@ -13,7 +13,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.Job
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.PostListener
 import ru.netology.nmedia.adapter.PostsAdapter
@@ -27,8 +26,6 @@ import ru.netology.nmedia.viewmodel.PostViewModel
  * и управляет навигацией к экрану создания/редактирования поста.
  */
 class FeedFragment : Fragment() {
-
-    private var pollingJob: Job? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -128,7 +125,7 @@ class FeedFragment : Fragment() {
         binding.list.adapter = adapter
 
         //Этот блок добавлен, чтобы решить проблему с подпрыгиванием и морганием постов
-        // при нажатии на кнопку лай
+        // при нажатии на кнопку лайк
         binding.list.itemAnimator?.let { animator ->
             if (animator is androidx.recyclerview.widget.DefaultItemAnimator) {
                 animator.supportsChangeAnimations = false
@@ -141,6 +138,7 @@ class FeedFragment : Fragment() {
             binding.empty.isVisible = state.empty
         }
 
+
         //Загрузка всего списка постов при исключениях
         viewModel.state.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading
@@ -152,16 +150,17 @@ class FeedFragment : Fragment() {
                     .show()
             }
         }
+
         //Показываем плашку, если есть новые посты
-        viewModel.hiddenPostsCount.observe(viewLifecycleOwner) { count ->
+        viewModel.newerCount.observe(viewLifecycleOwner) { count ->
             binding.newPostsChip.isVisible = count > 0
             println(count)
         }
 
         //Обработка нажатия на плашку для плавной прокрутки новых постов
         binding.newPostsChip.setOnClickListener {
+            binding.newPostsChip.isVisible = false
             viewModel.showHiddenPosts()
-
             //Тут важен порядок отрисовки. Прокрутка вверх должна происходит после тог, как потсы для отображения будут помечены как видимые
             binding.list.post {
                 binding.list.smoothScrollToPosition(0)
@@ -193,17 +192,8 @@ class FeedFragment : Fragment() {
         }
 
         // Первоначальная загрузка БЕЗ индикатора свайпа
-        //В прошлой версии в этом месте вызывался список всех постов при запуске приложения.
-        //Теперь запрос всех постов и фоновая синхронизация запускаются в init
-//        viewModel.load(fromRefresh = false)
+        viewModel.load(fromRefresh = false)
 
         return binding.root
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        val vm: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
-        vm.stopBackgroundSync()
-        pollingJob?.cancel()
     }
 }

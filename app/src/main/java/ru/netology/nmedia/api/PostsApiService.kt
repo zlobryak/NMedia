@@ -2,6 +2,7 @@ package ru.netology.nmedia.api
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
@@ -53,7 +54,7 @@ interface PostsApiService {
 
 
     @GET("posts/{id}/newer")
-    suspend fun getNewer(@Path("id") id: Long): List<Post>
+    suspend fun getNewer(@Path("id") id: Long): Response<List<Post>>
 
 }
 
