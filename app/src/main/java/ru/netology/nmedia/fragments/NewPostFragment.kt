@@ -70,6 +70,7 @@ class NewPostFragment : Fragment() {
                         authorAvatar = "netology.jpg",
                         isSynced = editPost.isSynced,
                         syncStatus = editPost.syncStatus,
+                        isVisible = isVisible,
                     )
                 )
                 findNavController().navigateUp()
@@ -81,11 +82,12 @@ class NewPostFragment : Fragment() {
                     Post(
                         id = 0L,
                         author = "Student",
-                        published = System.currentTimeMillis().toString(),
                         content = text,
+                        published = System.currentTimeMillis().toString(),
                         authorAvatar = "netology.jpg",
                         isSynced = false,
-                        syncStatus = PostEntity.SyncStatus.PENDING
+                        syncStatus = PostEntity.SyncStatus.PENDING,
+                        isVisible = true
                     )
                 )
                 // Удаляем черновик после сохранения (только в режиме создания)

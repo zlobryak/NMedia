@@ -1,24 +1,62 @@
 package ru.netology.nmedia.repository
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.map
+
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.PostEntity.SyncStatus
+import ru.netology.nmedia.entity.toEntity
+import ru.netology.nmedia.error.ApiError
+import ru.netology.nmedia.error.AppError
+import kotlin.collections.map
 
 class PostRepositoryImpl(
     private val dao: PostDao
 ) : PostRepository {
 
-    override val data: LiveData<List<Post>> = dao.getAll().map { posts ->
-        posts.map { it.toDto() }
+    override suspend fun getLastPostId(): Long {
+        return dao.getMaxId()
     }
 
-    override suspend fun getAllAsync() {
+    override fun getNewerCount(id: Long): Flow<Int> = flow {
+        while (true) {
+            delay(10_000L)
+            val response = PostApi.service.getNewer(id)
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            dao.insert(body.toEntity())
+            emit(body.size)
+        }
+    }.catch { e -> throw AppError.from(e) }
+
+    override val data = dao.getAllVisible().map { entities -> entities.map { it.toDto() } }
+
+    override suspend fun fetchNewPosts(lastKnownId: Long): Int {
+        val response = PostApi.service.getNewer(lastKnownId)
+        val body = response.body() ?: throw ApiError(response.code(), response.message())
+
+        // Новые посты добавляются с isVisible=false (по умолчанию в fromDto)
+        dao.insert(body.toEntity())
+        return body.size
+    }
+
+    //Метод для первоначальной загрузки списка постов. Все полученные посты сразу отображаются в ленте.
+    override suspend fun getAllVisible(): Long {
         val posts = PostApi.service.getAll()
-        dao.insert(posts.map(PostEntity::fromDto))
+        dao.insert(posts.map { post ->
+            PostEntity.fromDto(post).copy(isVisible = true)
+        })
+        return posts.maxOfOrNull { it.id } ?: 0L
+    }
+
+    override suspend fun getHiddenPostsCount(): Int {
+        return dao.countHiddenPosts()
     }
 
     override suspend fun save(post: Post) {
@@ -73,6 +111,11 @@ class PostRepositoryImpl(
             )
         }
 
+    }
+
+    //В локальной базе данных объявим все невидимые посты видимыми
+    override suspend fun showAllHiddenPosts() {
+        dao.showAllHiddenPosts()
     }
 
     //Не работает с текущим сервером

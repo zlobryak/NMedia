@@ -31,4 +31,5 @@
     <string name="retry">Повторить</string>
     <string name="sync_icon">Синхроизировано</string>
     <string name="press_to_try_again">Повторить отправку</string>
+    <string name="new_posts">Свежием записи</string>
 </resources>
