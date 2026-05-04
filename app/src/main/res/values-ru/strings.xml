@@ -32,4 +32,8 @@
     <string name="sync_icon">Синхроизировано</string>
     <string name="press_to_try_again">Повторить отправку</string>
     <string name="new_posts">Свежием записи</string>
+    <string name="save">Сохранить</string>
+    <string name="choose_photo">Выбрать фото</string>
+    <string name="take_photo">Снять фото</string>
+    <string name="photo_description">Описание фото</string>
 </resources>

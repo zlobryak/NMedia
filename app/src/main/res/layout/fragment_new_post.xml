@@ -57,6 +57,9 @@
                     android:id="@+id/photo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minHeight="120dp"
+                    android:minWidth="120dp"
+                    android:scaleType="fitCenter"
                     android:layout_gravity="center_horizontal"
                     android:contentDescription="@string/photo_description" />
 

@@ -130,7 +130,7 @@ class PostViewHolder(
             // Основной текст поста
             content.text = post.content
             // Время публикации
-            published.text = post.published
+            published.text = post.published.toString()
             // Форматируем и отображаем количество репостов
             icShare.text = counterFormatter(post.shareCount)
             // Состояние кнопки "лайк": отмечена, если пользователь уже поставил лайк

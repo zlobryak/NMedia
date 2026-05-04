@@ -19,7 +19,7 @@ fun ImageView.loadAvatar(authorAvatar: String?) {
 
 fun ImageView.loadAttachment(url: String) {
     Glide.with(context)
-        .load("$BASE_URL/images/$url")
+        .load("$BASE_URL/media/$url")
         .placeholder(R.drawable.ic_loading_100dp)
         .error(R.drawable.ic_error_100dp)
         .timeout(10_000)

@@ -1,6 +1,7 @@
 package ru.netology.nmedia.viewmodel
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -12,13 +13,17 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.db.AppDb
+import ru.netology.nmedia.dto.MediaUpload
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
+import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
 import ru.netology.nmedia.utils.SingleLiveEvent
+import java.io.File
 
+private val noPhoto = PhotoModel()
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: PostRepository =
@@ -45,6 +50,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
         get() = _postCreated
+
+    private val _photo = MutableLiveData<PhotoModel>(noPhoto)
+    val photo: LiveData<PhotoModel>
+        get() = _photo
 
     private val _refreshing = MutableLiveData(false)
     val refreshing: LiveData<Boolean> = _refreshing
@@ -111,7 +120,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun save(post: Post) {
         viewModelScope.launch {
             try {
-                repository.save(post)
+                when (photo.value) {
+                    noPhoto -> repository.save(post)
+                    else -> _photo.value?.file?.let { file ->
+                        repository.saveWithAttachment(post, MediaUpload(file))
+                    }
+                }
             } catch (_: Throwable) {
                 _state.value = FeedModelState(error = true)
                 repository.setFailed(post)
@@ -130,6 +144,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _errorEvent.value = "DB error"
             }
         }
+    }
+
+    fun changePhoto(uri: Uri?, file: File?) {
+        _photo.value = PhotoModel(uri, file)
     }
 
 
