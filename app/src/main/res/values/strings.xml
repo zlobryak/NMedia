@@ -36,4 +36,8 @@
     <string name="sync_icon">Sync icon</string>
     <string name="press_to_try_again">Press to try again</string>
     <string name="new_posts">New posts</string>
+    <string name="save">save</string>
+    <string name="choose_photo">Choose photo</string>
+    <string name="take_photo">Take photo</string>
+    <string name="photo_description">Photo description</string>
 </resources>

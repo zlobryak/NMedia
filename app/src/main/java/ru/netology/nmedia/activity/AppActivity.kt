@@ -23,7 +23,7 @@ import kotlin.apply
  * Главная активность приложения, отображающая навигацию через NavHostFragment.
  * Обрабатывает входящие Intent'ы с действием ACTION_SEND (например, "Поделиться" из других приложений).
  */
-class AppActivity : AppCompatActivity() {
+class   AppActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
