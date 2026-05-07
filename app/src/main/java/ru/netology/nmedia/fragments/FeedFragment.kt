@@ -108,19 +108,6 @@ class FeedFragment : Fragment() {
             }
         )
 
-//        // Отслеживаем добавление новых элементов в начало списка:
-//        // если новые посты добавлены в позицию 0 — плавно прокручиваем список вверх
-        //Устаревшая логика поведения, теперь будет появляться плашка, нажатие на которую будет прокручивать ленту
-//        adapter.registerAdapterDataObserver(
-//            object : RecyclerView.AdapterDataObserver() {
-//                override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-//                    if (positionStart == 0) {
-//                        binding.list.smoothScrollToPosition(0)
-//                    }
-//                }
-//            }
-//        )
-
         // Привязываем адаптер к RecyclerView
         binding.list.adapter = adapter
 

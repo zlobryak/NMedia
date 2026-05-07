@@ -9,7 +9,9 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
 import ru.netology.nmedia.R.drawable.ic_download_done_24
@@ -75,6 +77,7 @@ class PostFragment : Fragment() {
                     icLikes.text = counterFormatter(currentPost.likes)
                     // Форматирование количества
                     icViews.text = counterFormatter(currentPost.views)
+
                     //Иконка синхронизации
                     //Вообще я сделал selector, но пока разбирался с косяками, я его где-то потерял и не буду переделывать
                     // )))
@@ -155,10 +158,17 @@ class PostFragment : Fragment() {
                             show()
                         }
                     }
+
+                    // Переход на полноэкранный просмотр при нажатии на картинку
+                    attachment.setOnClickListener {
+                        findNavController().navigate(
+                            R.id.action_feedFragment_to_postFragment,
+                            Bundle().apply { putParcelable("postArg", currentPost) }
+                        )
+                    }
                 }
             }
         }
-
 
         // Обработка нажатия на кнопку "Назад" — возврат к предыдущему фрагменту (ленте)
         binding.cancelButton.setOnClickListener { findNavController().navigateUp() }

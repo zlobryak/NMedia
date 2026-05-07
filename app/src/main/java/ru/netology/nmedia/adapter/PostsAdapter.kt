@@ -180,6 +180,14 @@ class PostViewHolder(
                 )
             }
 
+            // Переход на полноэкранный просмотр при нажатии на картинку
+            attachment.setOnClickListener {
+                findNavController(itemView).navigate(
+                    R.id.action_feedFragment_to_postImageFragment,
+                    Bundle().apply {putParcelable("postArg", post)}
+                )
+            }
+
             // Отображение количества просмотров (форматированного)
             icViews.text = counterFormatter(post.views)
 
