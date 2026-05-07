@@ -8,14 +8,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentPostImageBinding
 import ru.netology.nmedia.functions.counterFormatter
 import ru.netology.nmedia.viewmodel.PostViewModel
-import com.bumptech.glide.Glide
 import ru.netology.nmedia.extensions.loadAttachment
 import ru.netology.nmedia.fragments.NewPostFragment.Companion.postArg
-import timber.log.Timber
 
 /**
  * Фрагмент для полноэкранного просмотра изображения поста
