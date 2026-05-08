@@ -37,12 +37,40 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/common_spacing"
+        app:iconSize="48dp"
         android:checkable="true"
         android:contentDescription="@string/likes_icon"
         app:icon="@drawable/ic_like_selector"
         android:shadowColor="@color/white"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
+        tools:text="10" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/ic_share"
+        style="@style/Widget.AppCompat.StandardButtonWithText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/share_icon"
+        app:iconSize="48dp"
+        app:icon="@drawable/ic_share_24"
+        app:layout_constraintBottom_toBottomOf="@id/ic_likes"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/ic_likes"
+        tools:text="10" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/ic_comment"
+        style="@style/Widget.AppCompat.StandardButtonWithText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/share_icon"
+        app:iconSize="48dp"
+        app:icon="@drawable/ic_comment"
+        app:layout_constraintBottom_toBottomOf="@id/ic_likes"
+        app:layout_constraintTop_toTopOf="@id/ic_likes"
+        app:layout_constraintStart_toStartOf="@id/ic_likes"
+        app:layout_constraintEnd_toEndOf="@id/ic_share"
         tools:text="10" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -55,6 +55,8 @@ class PostImageFragment : Fragment() {
             // Опционально: показываем, лайкнул ли текущий пользователь
             binding.icLikes.isChecked = post.likedByMe
 
+            binding.icShare.text = counterFormatter(post.shareCount)
+
             // Обработка клика на лайк
             binding.icLikes.setOnClickListener {
                 viewModel.likeById(post)

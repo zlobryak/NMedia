@@ -148,6 +148,7 @@ class NewPostFragment : Fragment() {
             viewLifecycleOwner,
             onBackPressedCallback
         )
+
         //Меню не работает, пока оставлю FAB как было.
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
