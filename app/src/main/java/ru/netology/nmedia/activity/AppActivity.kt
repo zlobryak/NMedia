@@ -16,6 +16,7 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.messaging.FirebaseMessaging
 import ru.netology.nmedia.R
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.ActivityAppBinding
 import kotlin.apply
 
@@ -88,6 +89,9 @@ class   AppActivity : AppCompatActivity() {
         }
 
         requestPermissions(arrayOf(permission), 1)
+
+        //TODO Временная авторизация из лекции
+        AppAuth.getInstance().setAuth(5, "x-token")
     }
 
     private fun checkGoogleApiAvailability() {
