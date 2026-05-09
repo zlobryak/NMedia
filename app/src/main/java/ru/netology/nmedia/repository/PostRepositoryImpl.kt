@@ -3,14 +3,23 @@ package ru.netology.nmedia.repository
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dto.Attachment
+import ru.netology.nmedia.dto.AttachmentType
+import ru.netology.nmedia.dto.Media
+import ru.netology.nmedia.dto.MediaUpload
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.PostEntity.SyncStatus
 import ru.netology.nmedia.entity.toEntity
 import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.AppError
+import ru.netology.nmedia.error.NetworkError
+import ru.netology.nmedia.error.UnknownError
+import java.io.IOException
 import kotlin.collections.map
 
 class PostRepositoryImpl(
@@ -116,6 +125,40 @@ class PostRepositoryImpl(
     //В локальной базе данных объявим все невидимые посты видимыми
     override suspend fun showAllHiddenPosts() {
         dao.showAllHiddenPosts()
+    }
+
+    override suspend fun saveWithAttachment(post: Post, upload: MediaUpload) {
+        try {
+            val media = upload(upload)
+            // TODO: add support for other types
+            val postWithAttachment = post.copy(attachment = Attachment(url = media.id, type = AttachmentType.IMAGE))
+            save(postWithAttachment)
+        } catch (e: AppError) {
+            throw e
+        } catch (_: IOException) {
+            throw NetworkError
+        } catch (_: Exception) {
+            throw UnknownError
+        }
+    }
+
+    override suspend fun upload(upload: MediaUpload): Media {
+        try {
+            val media = MultipartBody.Part.createFormData(
+                "file", upload.file.name, upload.file.asRequestBody()
+            )
+
+            val response = PostApi.service.upload(media)
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+
+            return response.body() ?: throw ApiError(response.code(), response.message())
+        } catch (_: IOException) {
+            throw NetworkError
+        } catch (_: Exception) {
+            throw UnknownError
+        }
     }
 
     //Не работает с текущим сервером

@@ -10,7 +10,7 @@ data class Post(
     val id: Long,
     val author: String,
     var content: String?,
-    val published: String? = null, //Сервер возвращает время создания
+    val published: Long? = null, //Сервер возвращает время создания
     val likes: Int = 0,
     val shareCount: Int = 0,
     val likedByMe: Boolean = false,

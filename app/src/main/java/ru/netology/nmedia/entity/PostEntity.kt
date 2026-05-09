@@ -1,8 +1,9 @@
 package ru.netology.nmedia.entity
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import ru.netology.nmedia.dto.Attachment
+import ru.netology.nmedia.dto.AttachmentEmbeddable
 import ru.netology.nmedia.dto.Post
 import kotlin.String
 
@@ -12,7 +13,7 @@ data class PostEntity(
     val id: Long,
     val author: String,
     var content: String?,
-    val published: String?,
+    val published: Long?,
     val likes: Int = 0,
     val shareCount: Int = 0,
     val likedByMe: Boolean = false,
@@ -22,7 +23,8 @@ data class PostEntity(
     val videoPreviewText: String? = null,
     val videoViewsCount: Int? = null,
     val authorAvatar: String,
-    val attachment: Attachment? = null,
+    @Embedded
+    val attachment: AttachmentEmbeddable? = null,
     val isSynced: Boolean = false,
     val syncStatus: SyncStatus = SyncStatus.PENDING,
     val isVisible: Boolean = false
@@ -43,7 +45,7 @@ data class PostEntity(
         videoPreviewText,
         videoViewsCount,
         authorAvatar,
-        attachment,
+        attachment?.toDto(),
         isSynced,
         syncStatus,
         isVisible
@@ -65,7 +67,7 @@ data class PostEntity(
             post.videoPreviewText,
             post.videoViewsCount,
             post.authorAvatar,
-            post.attachment,
+            AttachmentEmbeddable.fromDto(post.attachment),
             //Все пришедшие с сервера посты помечаются флагами и статусом
             isSynced = true,
             syncStatus = SyncStatus.SYNCED,

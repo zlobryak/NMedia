@@ -83,4 +83,5 @@ dependencies {
     implementation(libs.glide)
     implementation(libs.logging.interceptor)
     implementation(libs.timber)
+    implementation(libs.imagepicker)
 }

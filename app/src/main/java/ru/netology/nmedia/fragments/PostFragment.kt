@@ -66,7 +66,7 @@ class PostFragment : Fragment() {
                     // Основной текст поста
                     content.text = currentPost.content
                     // Время публикации (в формате строки, например "2 ч назад")
-                    published.text = currentPost.published
+                    published.text = currentPost.published.toString()
                     // Отображаем форматированное количество репостов (например, "1.2K")
                     icShare.text = counterFormatter(currentPost.shareCount)
                     // Отображаем состояние лайка: кнопка отмечена, если пользователь уже лайкнул
@@ -75,8 +75,10 @@ class PostFragment : Fragment() {
                     icLikes.text = counterFormatter(currentPost.likes)
                     // Форматирование количества
                     icViews.text = counterFormatter(currentPost.views)
+
                     //Иконка синхронизации
-                    //Вообще я сделал selector, но пока разбирался с косяками, я его где-то потерял и не буду переделывать)))
+                    //Вообще я сделал selector, но пока разбирался с косяками, я его где-то потерял и не буду переделывать
+                    // )))
                     when (currentPost.syncStatus) {
                         PostEntity.SyncStatus.PENDING -> icSync.setIconResource(ic_sync_24)
                         PostEntity.SyncStatus.SYNCED -> icSync.setIconResource(ic_download_done_24)
@@ -154,10 +156,17 @@ class PostFragment : Fragment() {
                             show()
                         }
                     }
+
+                    // Переход на полноэкранный просмотр при нажатии на картинку
+                    attachment.setOnClickListener {
+                        findNavController().navigate(
+                            R.id.action_feedFragment_to_postFragment,
+                            Bundle().apply { putParcelable("postArg", currentPost) }
+                        )
+                    }
                 }
             }
         }
-
 
         // Обработка нажатия на кнопку "Назад" — возврат к предыдущему фрагменту (ленте)
         binding.cancelButton.setOnClickListener { findNavController().navigateUp() }

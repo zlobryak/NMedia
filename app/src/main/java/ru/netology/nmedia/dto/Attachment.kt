@@ -12,12 +12,26 @@ import kotlinx.parcelize.Parcelize
 //Чтобы передавать только нужные данные, а не всю сущность целиком.
 //Ключевая особенность: Обычно не содержит бизнес-логики, только данные.
 
-enum class AttachmentType {    IMAGE
+enum class AttachmentType {
+    IMAGE
 
+}
+@Parcelize
+data class AttachmentEmbeddable(
+    var url: String?,
+    var type: AttachmentType?,
+) : Parcelable {
+    fun toDto() = Attachment(url, type = type)
+
+    companion object {
+        fun fromDto(dto: Attachment?) = dto?.let {
+            AttachmentEmbeddable(it.url, it.type)
+        }
+    }
 }
 
 @Parcelize
-data class Attachment (
+data class Attachment(
     val url: String? = null,
     val description: String? = null,
     val type: AttachmentType? = null

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@android:color/black"
+    android:fitsSystemWindows="true">
+
+    <!-- AppBar / Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@android:color/black"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Полноэкранное изображение -->
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="fitCenter"
+        android:visibility="visible"
+        android:contentDescription="@string/image_attacment"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:srcCompat="@drawable/podcast"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/ic_likes"
+        style="@style/Widget.AppCompat.LikeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/common_spacing"
+        app:iconSize="48dp"
+        android:checkable="true"
+        android:contentDescription="@string/likes_icon"
+        app:icon="@drawable/ic_like_selector"
+        android:shadowColor="@color/white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:text="10" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/ic_share"
+        style="@style/Widget.AppCompat.StandardButtonWithText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/share_icon"
+        app:iconSize="48dp"
+        app:icon="@drawable/ic_share_24"
+        app:layout_constraintBottom_toBottomOf="@id/ic_likes"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/ic_likes"
+        tools:text="10" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/ic_comment"
+        style="@style/Widget.AppCompat.StandardButtonWithText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/share_icon"
+        app:iconSize="48dp"
+        app:icon="@drawable/ic_comment"
+        app:layout_constraintBottom_toBottomOf="@id/ic_likes"
+        app:layout_constraintTop_toTopOf="@id/ic_likes"
+        app:layout_constraintStart_toStartOf="@id/ic_likes"
+        app:layout_constraintEnd_toEndOf="@id/ic_share"
+        tools:text="10" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
