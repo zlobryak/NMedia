@@ -149,7 +149,7 @@ class NewPostFragment : Fragment() {
             onBackPressedCallback
         )
 
-        //Меню не работает, пока оставлю FAB как было.
+        //TODO Пока разбирался с работой меню оставил FAB. Теперь меню заработало и надо убрать FAB
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.menu_new_post, menu)

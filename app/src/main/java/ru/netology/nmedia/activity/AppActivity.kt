@@ -5,9 +5,14 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.MenuProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.findNavController
@@ -16,14 +21,18 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.messaging.FirebaseMessaging
 import ru.netology.nmedia.R
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.ActivityAppBinding
+import ru.netology.nmedia.viewmodel.AuthViewModel
 import kotlin.apply
+import kotlin.getValue
 
 /**
  * Главная активность приложения, отображающая навигацию через NavHostFragment.
  * Обрабатывает входящие Intent'ы с действием ACTION_SEND (например, "Поделиться" из других приложений).
  */
-class   AppActivity : AppCompatActivity() {
+class AppActivity : AppCompatActivity() {
+    private val viewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +51,41 @@ class   AppActivity : AppCompatActivity() {
             insets
         }
         requestNotificationsPermission()
+
+        viewModel.data.observe(this) {
+            invalidateOptionsMenu()
+        }
+
+        addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_main, menu)
+
+                menu.let {
+                    it.setGroupVisible(R.id.unauthenticated, !viewModel.authenticated)
+                    it.setGroupVisible(R.id.authenticated, viewModel.authenticated)
+                }
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
+                when (menuItem.itemId) {
+                    R.id.signin -> {
+                        findNavController(R.id.nav_controller).navigate(R.id.action_feedFragment_to_loginFragment)
+                        true
+                    }
+
+                    R.id.signup -> {
+                        findNavController(R.id.nav_controller).navigate(R.id.action_feedFragment_to_registrationFragment)
+                        true
+                    }
+
+                    R.id.signout -> {
+                        AppAuth.getInstance().removeAuth()
+                        true
+                    }
+
+                    else -> false
+                }
+        })
 
         // Получаем действие, с которым был запущен Intent
         val action = intent.action
@@ -77,6 +121,11 @@ class   AppActivity : AppCompatActivity() {
         checkGoogleApiAvailability()
     }
 
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.nav_controller)
+        return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+
     private fun requestNotificationsPermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             return
@@ -88,25 +137,30 @@ class   AppActivity : AppCompatActivity() {
         }
 
         requestPermissions(arrayOf(permission), 1)
+
+        //TODO Временная авторизация из лекции
+        AppAuth.getInstance().setAuth(5, "x-token")
     }
 
-    private fun checkGoogleApiAvailability() {
-        with(GoogleApiAvailability.getInstance()) {
-            val code = isGooglePlayServicesAvailable(this@AppActivity)
-            if (code == ConnectionResult.SUCCESS) {
-                return@with
+        private fun checkGoogleApiAvailability() {
+            with(GoogleApiAvailability.getInstance()) {
+                val code = isGooglePlayServicesAvailable(this@AppActivity)
+                if (code == ConnectionResult.SUCCESS) {
+                    return@with
+                }
+                if (isUserResolvableError(code)) {
+                    getErrorDialog(this@AppActivity, code, 9000)?.show()
+                    return
+                }
+                Toast.makeText(
+                    this@AppActivity,
+                    getString(R.string.google_play_unavailable), Toast.LENGTH_LONG
+                ).show()
             }
-            if (isUserResolvableError(code)) {
-                getErrorDialog(this@AppActivity, code, 9000)?.show()
-                return
+
+            FirebaseMessaging.getInstance().token.addOnSuccessListener {
+                println(it)
             }
-            Toast.makeText(this@AppActivity,
-                getString(R.string.google_play_unavailable), Toast.LENGTH_LONG).show()
         }
 
-        FirebaseMessaging.getInstance().token.addOnSuccessListener {
-            println(it)
-        }
     }
-
-}
