@@ -5,7 +5,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import ru.netology.nmedia.api.PostApi
+import ru.netology.nmedia.api.Api
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.AttachmentType
@@ -33,7 +33,7 @@ class PostRepositoryImpl(
     override fun getNewerCount(id: Long): Flow<Int> = flow {
         while (true) {
             delay(10_000L)
-            val response = PostApi.service.getNewer(id)
+            val response = Api.service.getNewer(id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -47,7 +47,7 @@ class PostRepositoryImpl(
     override val data = dao.getAllVisible().map { entities -> entities.map { it.toDto() } }
 
     override suspend fun fetchNewPosts(lastKnownId: Long): Int {
-        val response = PostApi.service.getNewer(lastKnownId)
+        val response = Api.service.getNewer(lastKnownId)
         val body = response.body() ?: throw ApiError(response.code(), response.message())
 
         // Новые посты добавляются с isVisible=false (по умолчанию в fromDto)
@@ -57,7 +57,7 @@ class PostRepositoryImpl(
 
     //Метод для первоначальной загрузки списка постов. Все полученные посты сразу отображаются в ленте.
     override suspend fun getAllVisible(): Long {
-        val posts = PostApi.service.getAll()
+        val posts = Api.service.getAll()
         dao.insert(posts.map { post ->
             PostEntity.fromDto(post).copy(isVisible = true)
         })
@@ -78,7 +78,7 @@ class PostRepositoryImpl(
             )
         )
         //Если получаем с сервера ответ - заменяем временный пост, для замены id и смены флагов(по умолчанию все прошедшие fromDto)
-        dao.insert(PostEntity.fromDto(PostApi.service.savePost(post)))
+        dao.insert(PostEntity.fromDto(Api.service.savePost(post)))
         //Удаляем временный пост (надо реализовать точечное удаление поста, а не всех с этим статусом)
         dao.removePending(SyncStatus.PENDING)
 
@@ -91,7 +91,7 @@ class PostRepositoryImpl(
 
     override suspend fun removeById(id: Long) {
         dao.removeById(id)
-        PostApi.service.deletePost(id)
+        Api.service.deletePost(id)
     }
 
     override suspend fun likeById(id: Long, likedByMe: Boolean) {
@@ -100,9 +100,9 @@ class PostRepositoryImpl(
         //В API есть два вызова, между которыми нужно выбрать, в зависимости от того,
         // был ли лайк уже поставлен автором поста
         if (!likedByMe) {
-            PostApi.service.like(id)
+            Api.service.like(id)
         } else {
-            PostApi.service.dislike(id)
+            Api.service.dislike(id)
         }
     }
 
@@ -148,7 +148,7 @@ class PostRepositoryImpl(
                 "file", upload.file.name, upload.file.asRequestBody()
             )
 
-            val response = PostApi.service.upload(media)
+            val response = Api.service.upload(media)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }

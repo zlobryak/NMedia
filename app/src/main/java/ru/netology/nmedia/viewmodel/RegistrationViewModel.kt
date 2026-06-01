@@ -11,7 +11,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import ru.netology.nmedia.api.AuthApi
+import ru.netology.nmedia.api.Api
 import ru.netology.nmedia.dto.AuthResponse
 import java.io.File
 
@@ -46,7 +46,7 @@ class RegistrationViewModel : ViewModel() {
                 }
 
                 // Отправляем запрос через AuthApi
-                val response = AuthApi.service.register(
+                val response = Api.service.register(
                     login = login.toRequestBody("text/plain".toMediaType()),
                     pass = password.toRequestBody("text/plain".toMediaType()),
                     name = name.toRequestBody("text/plain".toMediaType()),

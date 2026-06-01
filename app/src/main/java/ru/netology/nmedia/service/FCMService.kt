@@ -13,6 +13,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
 import ru.netology.nmedia.R
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.Post
 import kotlin.enumValues
 
@@ -89,6 +90,15 @@ class FCMService : FirebaseMessagingService() {
             return
         }
 
+        val pushWithId = gson.fromJson(message.data[content], PushMessage::class.java)
+
+
+        if(pushWithId.recipientId == AppAuth.getInstance().authStateFlow.value.id){
+            handlePush(pushWithId)
+        }
+
+
+
         val actionEnum = enumValues<Action>().find { it.name == actionStr }
 
         when (actionEnum) {
@@ -100,6 +110,27 @@ class FCMService : FirebaseMessagingService() {
                 Log.w("FCMService", "Unknown action: $actionStr")
         }
     }
+
+    private fun handlePush(pushMessage: PushMessage) {
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(
+                "User id: {pushMessage.recipientId}"
+            )
+            .setContentText(pushMessage.content)
+            .setStyle(NotificationCompat.BigTextStyle()
+                .bigText(pushMessage.content))
+            .build()
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            NotificationManagerCompat.from(this).notify(notificationId++, notification)
+        }
+    }
+
 
     /**
      * Обрабатывает событие создания нового поста.
@@ -165,7 +196,7 @@ class FCMService : FirebaseMessagingService() {
      * @param token Новый FCM-токен устройства в виде строки.
      */
     override fun onNewToken(token: String) {
-        println(token)
+        AppAuth.getInstance().sendPushToken(token)
     }
 }
 
@@ -199,4 +230,9 @@ data class Like(
     val userName: String,
     val postId: Long,
     val postAuthor: String,
+)
+
+data class PushMessage(
+    val recipientId: Long?,
+    val content: String,
 )

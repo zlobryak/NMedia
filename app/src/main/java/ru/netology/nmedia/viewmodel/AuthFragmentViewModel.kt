@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import ru.netology.nmedia.api.AuthApi
+import ru.netology.nmedia.api.Api
 import ru.netology.nmedia.auth.AppAuth
 
 class AuthFragmentViewModel : ViewModel() {
@@ -25,7 +25,7 @@ class AuthFragmentViewModel : ViewModel() {
             _loginState.value = LoginState.Loading
 
             try {
-                val response = AuthApi.service.authenticate(username, password)
+                val response = Api.service.authenticate(username, password)
 
                 if (response.isSuccessful && response.body() != null) {
                     val authData = response.body()!!
