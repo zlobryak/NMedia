@@ -13,8 +13,8 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
 import ru.netology.nmedia.R
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.Post
-import kotlin.enumValues
 
 /**
  * Firebase Cloud Messaging (FCM) сервис для обработки входящих push-уведомлений.
@@ -27,10 +27,7 @@ import kotlin.enumValues
  */
 class FCMService : FirebaseMessagingService() {
 
-    /**
-     * Ключ для получения типа действия из данных FCM-сообщения.
-     */
-    private val action = "action"
+
 
     /**
      * Ключ для получения содержимого (payload) из данных FCM-сообщения.
@@ -74,32 +71,77 @@ class FCMService : FirebaseMessagingService() {
 
     /**
      * Вызывается при получении нового сообщения от Firebase Cloud Messaging.
-     * Извлекает тип действия из поля "action" и содержимое из поля "content".
-     * На основе значения действия вызывает соответствующий обработчик:
-     * - [handleNewPost] для действия [Action.NewPost]
-     * - [handleLike] для действия [Action.LIKE]
-     *
-     * Если действие не распознано или отсутствует, записывает предупреждение в лог.
      *
      * @param message Объект [RemoteMessage], содержащий данные входящего FCM-сообщения.
      */
     override fun onMessageReceived(message: RemoteMessage) {
-        val actionStr = message.data[action] ?: run {
-            Log.w("FCMService", "No 'action' field in message")
+        Log.d("FCMService", "Message received: ${message.data}")
+
+        // Парсим JSON. Если поле 'content' отсутствует или невалидно — выходим.
+        val contentJson = message.data[content] ?: run {
+            Log.w("FCMService", "No 'content' field in message")
             return
         }
 
-        val actionEnum = enumValues<Action>().find { it.name == actionStr }
+        val pushMessage = try {
+            gson.fromJson(contentJson, PushMessage::class.java)
+        } catch (e: Exception) {
+            Log.e("FCMService", "Failed to parse PushMessage: $contentJson", e)
+            return
+        }
 
-        when (actionEnum) {
-            Action.LIKE -> handleLike(gson.fromJson(message.data[content], Like::class.java))
-            //При получении сообщения с пометкой "NewPost" передадим в метод handleNewPost полученный пост
-            Action.NewPost -> handleNewPost(gson.fromJson(message.data[content], Post::class.java))
-            null ->
-                // Логируем неизвестное действие
-                Log.w("FCMService", "Unknown action: $actionStr")
+        // Передаём в бизнес-логику
+        handlePush(pushMessage)
+    }
+
+    /**
+     * Обрабатывает входящий PushMessage согласно бизнес-логике:
+     * - null или совпадение с текущим юзером - показать уведомление
+     * - несовпадение (включая 0) - переотправить токен для синхронизации
+     */
+    private fun handlePush(pushMessage: PushMessage) {
+        val auth = AppAuth.getInstance()
+        val currentUserId = auth.authStateFlow.value.id
+
+        when {
+            // Массовая рассылка или личное сообщение нам
+            pushMessage.recipientId == null || pushMessage.recipientId == currentUserId -> {
+                Log.d("FCMService", "Showing notification for recipient: ${pushMessage.recipientId}")
+                showNotification(pushMessage.content)
+            }
+            // Конфликт авторизации: сервер считает, что мы другой пользователь (или аноним)
+            else -> {
+                Log.w("FCMService", "Recipient mismatch! Server: ${pushMessage.recipientId}, Local: $currentUserId. Resending token...")
+                if (currentUserId > 0) {
+                    auth.sendPushToken(AppAuth.getInstance().authStateFlow.value.token ?: return)
+                }
+            }
         }
     }
+
+    /**
+     * Вспомогательный метод для отображения уведомления.
+     * Вынесен отдельно для чистоты кода.
+     */
+    private fun showNotification(text: String) {
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(getString(R.string.app_name)) // Или динамический заголовок
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .build()
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            NotificationManagerCompat.from(this).notify(notificationId++, notification)
+        }
+    }
+
 
     /**
      * Обрабатывает событие создания нового поста.
@@ -110,26 +152,28 @@ class FCMService : FirebaseMessagingService() {
      *
      * @param post Объект [Post], десериализованный из JSON-данных FCM-сообщения.
      */
-    private fun handleNewPost(post: Post) {
-        Log.w("FCMService", "handleNewPost: $post")
-        val notification = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle(
-                getString(R.string.author_of_new_post_push_notification_title, post.author)
-            )
-            .setContentText(post.content)
-            .setStyle(NotificationCompat.BigTextStyle()
-                .bigText(post.content))
-            .build()
-
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            NotificationManagerCompat.from(this).notify(notificationId++, notification)
-        }
-    }
+//    private fun handleNewPost(post: Post) {
+//        Log.w("FCMService", "handleNewPost: $post")
+//        val notification = NotificationCompat.Builder(this, channelId)
+//            .setSmallIcon(R.drawable.ic_notification)
+//            .setContentTitle(
+//                getString(R.string.author_of_new_post_push_notification_title, post.author)
+//            )
+//            .setContentText(post.content)
+//            .setStyle(
+//                NotificationCompat.BigTextStyle()
+//                    .bigText(post.content)
+//            )
+//            .build()
+//
+//        if (ActivityCompat.checkSelfPermission(
+//                this,
+//                Manifest.permission.POST_NOTIFICATIONS
+//            ) == PackageManager.PERMISSION_GRANTED
+//        ) {
+//            NotificationManagerCompat.from(this).notify(notificationId++, notification)
+//        }
+//    }
 
     /**
      * Обрабатывает событие получения лайка.
@@ -140,22 +184,22 @@ class FCMService : FirebaseMessagingService() {
      * @param like Объект [Like], десериализованный из JSON-данных FCM-сообщения,
      *             содержит информацию о пользователе, поставившем лайк, и авторе поста.
      */
-    private fun handleLike(like: Like) {
-        val notification = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_notification)
-            .setContentText(
-                getString(R.string.notification_user_liked, like.userName, like.postAuthor)
-            )
-            .build()
-
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            NotificationManagerCompat.from(this).notify(notificationId++, notification)
-        }
-    }
+//    private fun handleLike(like: Like) {
+//        val notification = NotificationCompat.Builder(this, channelId)
+//            .setSmallIcon(R.drawable.ic_notification)
+//            .setContentText(
+//                getString(R.string.notification_user_liked, like.userName, like.postAuthor)
+//            )
+//            .build()
+//
+//        if (ActivityCompat.checkSelfPermission(
+//                this,
+//                Manifest.permission.POST_NOTIFICATIONS
+//            ) == PackageManager.PERMISSION_GRANTED
+//        ) {
+//            NotificationManagerCompat.from(this).notify(notificationId++, notification)
+//        }
+//    }
 
     /**
      * Вызывается при обновлении FCM-токена устройства.
@@ -165,25 +209,10 @@ class FCMService : FirebaseMessagingService() {
      * @param token Новый FCM-токен устройства в виде строки.
      */
     override fun onNewToken(token: String) {
-        println(token)
+        AppAuth.getInstance().sendPushToken(token)
     }
 }
 
-/**
- * Перечисление поддерживаемых типов действий, которые могут приходить в FCM-сообщениях.
- * Используется для маршрутизации входящих сообщений к соответствующим обработчикам.
- */
-enum class Action {
-    /**
-     * Действие: пользователь поставил лайк на пост.
-     */
-    LIKE,
-
-    /**
-     * Действие: опубликован новый пост.
-     */
-    NewPost,
-}
 
 /**
  * DTO-класс для передачи данных о лайке через FCM.
@@ -199,4 +228,9 @@ data class Like(
     val userName: String,
     val postId: Long,
     val postAuthor: String,
+)
+
+data class PushMessage(
+    val recipientId: Long?,
+    val content: String,
 )

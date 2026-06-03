@@ -139,7 +139,7 @@ class AppActivity : AppCompatActivity() {
         requestPermissions(arrayOf(permission), 1)
 
         //TODO Временная авторизация из лекции
-        AppAuth.getInstance().setAuth(5, "x-token")
+//        AppAuth.getInstance().setAuth(5, "x-token")
     }
 
         private fun checkGoogleApiAvailability() {
