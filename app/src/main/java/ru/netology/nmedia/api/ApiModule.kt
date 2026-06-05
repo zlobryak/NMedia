@@ -3,26 +3,29 @@ package ru.netology.nmedia.api
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
 import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.auth.AppAuth
-import ru.netology.nmedia.di.DependencyContainer
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
-@InstallIn(Singleton::class)
+@InstallIn(SingletonComponent::class)
 @Module
-class ApiModule(appAuth: AppAuth) {
+class ApiModule {
 
-    companion object{
+    companion object {
         private const val BASE_URL: String = "${BuildConfig.BASE_URL}/api/slow/"
 
     }
 
-    @Provides
     @Singleton
-    fun providesLogging (): HttpLoggingInterceptor = HttpLoggingInterceptor().apply {
+    @Provides
+    fun providesLogging(): HttpLoggingInterceptor = HttpLoggingInterceptor().apply {
         level = if (BuildConfig.DEBUG) {
             HttpLoggingInterceptor.Level.BODY
         } else {
@@ -30,6 +33,7 @@ class ApiModule(appAuth: AppAuth) {
         }
     }
 
+    @Singleton
     @Provides
     fun provideOkHttp(
         logging: HttpLoggingInterceptor,
@@ -48,4 +52,20 @@ class ApiModule(appAuth: AppAuth) {
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .build()
+
+    @Singleton
+    @Provides
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient
+    ): Retrofit = Retrofit.Builder()
+        .baseUrl(BASE_URL)
+        .client(okHttpClient)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    @Singleton
+    @Provides
+    fun provideApiService(
+        retrofit: Retrofit
+    ): ApiService = retrofit.create<ApiService>()
 }

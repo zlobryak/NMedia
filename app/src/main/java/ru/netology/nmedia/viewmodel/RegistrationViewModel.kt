@@ -6,12 +6,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import jakarta.inject.Inject
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import ru.netology.nmedia.api.Api
+import ru.netology.nmedia.api.ApiService
 import ru.netology.nmedia.dto.AuthResponse
 import java.io.File
 
@@ -22,7 +24,11 @@ sealed class RegistrationState {
     data class Error(val message: String) : RegistrationState()
 }
 
-class RegistrationViewModel : ViewModel() {
+
+@HiltViewModel
+class RegistrationViewModel @Inject constructor(
+    private val apiService: ApiService
+): ViewModel() {
 
     private val _registrationState = MutableLiveData<RegistrationState>(RegistrationState.Idle)
     val registrationState: LiveData<RegistrationState> = _registrationState
@@ -46,7 +52,7 @@ class RegistrationViewModel : ViewModel() {
                 }
 
                 // Отправляем запрос через AuthApi
-                val response = Api.service.register(
+                val response = apiService.register(
                     login = login.toRequestBody("text/plain".toMediaType()),
                     pass = password.toRequestBody("text/plain".toMediaType()),
                     name = name.toRequestBody("text/plain".toMediaType()),

@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.PostListener
 import ru.netology.nmedia.adapter.PostsAdapter
@@ -25,6 +26,7 @@ import ru.netology.nmedia.viewmodel.PostViewModel
  * Отображает список постов, обрабатывает действия пользователя (лайк, шер, редактирование и т.д.)
  * и управляет навигацией к экрану создания/редактирования поста.
  */
+@AndroidEntryPoint
 class FeedFragment : Fragment() {
 
     override fun onCreateView(
@@ -35,7 +37,9 @@ class FeedFragment : Fragment() {
         val binding = FragmentFeedBinding.inflate(layoutInflater, container, false)
 
         // Получаем общую ViewModel через parent fragment (для совместного использования с другими дочерними фрагментами)
-        val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
+//        val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
+        val viewModel: PostViewModel by viewModels() // ← Теперь Hilt подхватит
+
 
         // Создаём адаптер списка постов и реализуем обработчики действий через PostListener
         val adapter = PostsAdapter(
