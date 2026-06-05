@@ -4,6 +4,7 @@ plugins {
     id("kotlin-parcelize")
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.google.services)
+    id("com.google.dagger.hilt.android")
 
 }
 
@@ -84,4 +85,6 @@ dependencies {
     implementation(libs.logging.interceptor)
     implementation(libs.timber)
     implementation(libs.imagepicker)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
 }
