@@ -1,3 +1,4 @@
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -84,4 +85,5 @@ dependencies {
     implementation(libs.logging.interceptor)
     implementation(libs.timber)
     implementation(libs.imagepicker)
+    implementation(libs.androidx.paging.runtime)
 }
