@@ -22,6 +22,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentNewPostBinding
 import ru.netology.nmedia.dto.Post
@@ -37,6 +38,7 @@ import kotlin.getValue
  * - если передан [Post] через [postArg] — работает в режиме редактирования,
  * — если передан только [textArg] или аргументы отсутствуют — создаёт новый пост.
  */
+@AndroidEntryPoint
 class NewPostFragment : Fragment() {
 
     override fun onAttach(context: Context) {

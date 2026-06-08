@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.R.drawable.ic_download_done_24
 import ru.netology.nmedia.R.drawable.ic_sync_24
@@ -27,6 +28,7 @@ import timber.log.Timber
  * Принимает пост через аргумент [postArg] и отображает его содержимое с возможностью взаимодействия:
  * лайк, репост, редактирование, удаление.
  */
+@AndroidEntryPoint
 class PostFragment : Fragment() {
 
     companion object {

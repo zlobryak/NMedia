@@ -12,6 +12,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.Post
@@ -25,9 +26,10 @@ import ru.netology.nmedia.dto.Post
  * Также отвечает за создание уведомления канала (начиная с Android Oreo/API 26)
  * и логирование нового FCM-токена устройства.
  */
+@AndroidEntryPoint
 class FCMService : FirebaseMessagingService() {
 
-
+lateinit var appAuth: AppAuth
 
     /**
      * Ключ для получения содержимого (payload) из данных FCM-сообщения.
@@ -100,7 +102,7 @@ class FCMService : FirebaseMessagingService() {
      * - несовпадение (включая 0) - переотправить токен для синхронизации
      */
     private fun handlePush(pushMessage: PushMessage) {
-        val auth = AppAuth.getInstance()
+        val auth = appAuth
         val currentUserId = auth.authStateFlow.value.id
 
         when {
@@ -113,7 +115,7 @@ class FCMService : FirebaseMessagingService() {
             else -> {
                 Log.w("FCMService", "Recipient mismatch! Server: ${pushMessage.recipientId}, Local: $currentUserId. Resending token...")
                 if (currentUserId > 0) {
-                    auth.sendPushToken(AppAuth.getInstance().authStateFlow.value.token ?: return)
+                    auth.sendPushToken(auth.authStateFlow.value.token ?: return)
                 }
             }
         }
@@ -209,7 +211,7 @@ class FCMService : FirebaseMessagingService() {
      * @param token Новый FCM-токен устройства в виде строки.
      */
     override fun onNewToken(token: String) {
-        AppAuth.getInstance().sendPushToken(token)
+        appAuth.sendPushToken(token)
     }
 }
 

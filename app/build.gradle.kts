@@ -1,10 +1,10 @@
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("kotlin-parcelize")
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.google.services)
+    id("com.google.dagger.hilt.android")
 
 }
 
@@ -86,4 +86,6 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.imagepicker)
     implementation(libs.androidx.paging.runtime)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
 }

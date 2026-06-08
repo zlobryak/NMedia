@@ -20,12 +20,14 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import com.bumptech.glide.Glide
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentRegistrationBinding
 import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.viewmodel.RegistrationState
 import ru.netology.nmedia.viewmodel.RegistrationViewModel
 
+@AndroidEntryPoint
 class RegistrationFragment : Fragment() {
 
     private var _binding: FragmentRegistrationBinding? = null
