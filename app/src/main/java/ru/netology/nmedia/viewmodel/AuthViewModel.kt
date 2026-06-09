@@ -8,10 +8,12 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.auth.AuthState
+import ru.netology.nmedia.repository.PostRepository
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val appAuth: AppAuth
+    private val appAuth: AppAuth,
+    private val repository: PostRepository
 ) : ViewModel() {
     val data: LiveData<AuthState> = appAuth
         .authStateFlow
@@ -23,8 +25,11 @@ class AuthViewModel @Inject constructor(
         appAuth.setAuth(id, token)
     }
 
-
     fun logout() {
         appAuth.removeAuth()
+    }
+    //Обновляет посты после logout
+    suspend fun refresh(){
+        repository.getAllVisible()
     }
 }

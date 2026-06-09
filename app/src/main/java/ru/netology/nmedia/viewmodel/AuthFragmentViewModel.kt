@@ -1,25 +1,23 @@
 package ru.netology.nmedia.viewmodel
 
-import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dagger.hilt.EntryPoint
-import dagger.hilt.InstallIn
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
 import jakarta.inject.Inject
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.api.ApiService
 import ru.netology.nmedia.auth.AppAuth
+import ru.netology.nmedia.repository.PostRepository
 
 
 @HiltViewModel
 class AuthFragmentViewModel @Inject constructor(
     private val appAuth: AppAuth,
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val repository: PostRepository
+
 
 ) : ViewModel() {
 
@@ -64,7 +62,10 @@ class AuthFragmentViewModel @Inject constructor(
             _loginState.value = LoginState.Idle
         }
     }
-
+    //Запрашивает новые посты при login
+    suspend fun refresh(){
+        repository.getAllVisible()
+    }
 }
 
 sealed class LoginState {

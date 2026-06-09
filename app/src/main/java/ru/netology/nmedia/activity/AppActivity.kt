@@ -15,12 +15,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import ru.netology.nmedia.R
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.ActivityAppBinding
@@ -34,7 +36,8 @@ import kotlin.getValue
  * Обрабатывает входящие Intent'ы с действием ACTION_SEND (например, "Поделиться" из других приложений).
  */
 @AndroidEntryPoint
-class AppActivity : AppCompatActivity() {    @Inject
+class AppActivity : AppCompatActivity() {
+    @Inject
     lateinit var appAuth: AppAuth
     private val viewModel: AuthViewModel by viewModels()
 
@@ -84,6 +87,10 @@ class AppActivity : AppCompatActivity() {    @Inject
 
                     R.id.signout -> {
                         appAuth.removeAuth()
+                        //Обновим посты полсе logout
+                        lifecycleScope.launch {
+                            viewModel.refresh()
+                        }
                         true
                     }
 
@@ -150,25 +157,25 @@ class AppActivity : AppCompatActivity() {    @Inject
     @Inject
     lateinit var googleApiAvailability: GoogleApiAvailability
 
-        private fun checkGoogleApiAvailability() {
-            with(googleApiAvailability) {
-                val code = isGooglePlayServicesAvailable(this@AppActivity)
-                if (code == ConnectionResult.SUCCESS) {
-                    return@with
-                }
-                if (isUserResolvableError(code)) {
-                    getErrorDialog(this@AppActivity, code, 9000)?.show()
-                    return
-                }
-                Toast.makeText(
-                    this@AppActivity,
-                    getString(R.string.google_play_unavailable), Toast.LENGTH_LONG
-                ).show()
+    private fun checkGoogleApiAvailability() {
+        with(googleApiAvailability) {
+            val code = isGooglePlayServicesAvailable(this@AppActivity)
+            if (code == ConnectionResult.SUCCESS) {
+                return@with
             }
-
-            firebaseMessaging.token.addOnSuccessListener {
-                println(it)
+            if (isUserResolvableError(code)) {
+                getErrorDialog(this@AppActivity, code, 9000)?.show()
+                return
             }
+            Toast.makeText(
+                this@AppActivity,
+                getString(R.string.google_play_unavailable), Toast.LENGTH_LONG
+            ).show()
         }
 
+        firebaseMessaging.token.addOnSuccessListener {
+            println(it)
+        }
     }
+
+}

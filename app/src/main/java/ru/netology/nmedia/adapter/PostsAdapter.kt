@@ -1,4 +1,4 @@
-package ru.netology.nmedia.adapter
+ package ru.netology.nmedia.adapter
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,8 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.navigation.Navigation.findNavController
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import ru.netology.nmedia.R
 import ru.netology.nmedia.R.drawable.ic_download_done_24
@@ -43,7 +43,7 @@ interface PostListener {
 class PostsAdapter(
     private val listener: PostListener
 ) :
-    ListAdapter<Post, PostViewHolder>(PostDiffUtils) {
+    PagingDataAdapter<Post, PostViewHolder>(PostDiffUtils) {
 
     /**
      * Создаёт новый ViewHolder, инфлатя макет карточки поста через View Binding.
@@ -66,7 +66,7 @@ class PostsAdapter(
      * @param position позиция элемента в списке
      */
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        holder.bind(getItem(position) ?: return)
     }
 }
 
@@ -111,6 +111,11 @@ class PostViewHolder(
                     icSync.setIconResource(R.drawable.ic_refresh_24)
                     icSync.text = "Press to try again" //Переделать строку для возможности перевода
                     icSync.isClickable = true
+                }
+
+                else -> {
+                    icSync.visibility = View.GONE
+
                 }
 
             }

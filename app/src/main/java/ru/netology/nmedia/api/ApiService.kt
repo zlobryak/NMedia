@@ -12,6 +12,7 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
+import retrofit2.http.Query
 import ru.netology.nmedia.dto.AuthResponse
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
@@ -59,11 +60,18 @@ interface ApiService {
         @Part avatar: MultipartBody.Part? // nullable — аватарка опциональна
     ): Response<AuthResponse>
 
-}
+    @GET("posts/{id}/before")
+    suspend fun getBefore(
+        @Path("id") id: Long,
+        @Query("count") count: Int
+    ): Response<List<Post>>
 
-//До DI это был объект для вызова API
-//object Api{
-//    val service by lazy {
-//        retrofit.create<ApiService>()
-//    }
-//}
+    @GET("posts/{id}/after")
+    suspend fun getAfter(
+        @Path("id") id: Long,
+        @Query("count") count: Int
+    ): Response<List<Post>>
+
+    @GET("posts/latest")
+    suspend fun getLatest(@Query("count") count: Int): Response<List<Post>>
+}

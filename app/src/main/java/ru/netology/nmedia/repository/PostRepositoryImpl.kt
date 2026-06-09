@@ -1,6 +1,10 @@
 package ru.netology.nmedia.repository
 
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import okhttp3.MultipartBody
@@ -22,6 +26,7 @@ import ru.netology.nmedia.error.UnknownError
 import java.io.IOException
 import javax.inject.Inject
 import kotlin.collections.map
+import kotlin.time.Duration.Companion.milliseconds
 
 class PostRepositoryImpl @Inject constructor(
     private val dao: PostDao,
@@ -32,21 +37,68 @@ class PostRepositoryImpl @Inject constructor(
         return dao.getMaxId()
     }
 
-    override fun getNewerCount(id: Long): Flow<Int> = flow {
+//    override fun getNewerCount(id: Long): Flow<Int> = flow {
+//        while (true) {
+//            delay(10_000L.milliseconds)
+//            val response = apiService.getNewer(id)
+//            if (!response.isSuccessful) {
+//                throw ApiError(response.code(), response.message())
+//            }
+//
+//            val body = response.body() ?: throw ApiError(response.code(), response.message())
+//            dao.insert(body.toEntity())
+//            emit(body.size)
+//        }
+//    }.catch { e -> throw AppError.from(e) }
+
+    override fun getNewerCount(): Flow<Int> = flow {
         while (true) {
-            delay(10_000L)
-            val response = apiService.getNewer(id)
-            if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+            delay(10_000L.milliseconds)
+
+            try {
+                // Всегда получаем актуальный максимальный ID из базы
+                val lastId = dao.getMaxId()
+                val response = apiService.getNewer(lastId)
+
+                if (response.isSuccessful) {
+                    val body = response.body()
+                    if (!body.isNullOrEmpty()) {
+                        // Вставляем новые посты (они сохранятся с isVisible = false)
+                        dao.insert(body.toEntity())
+                    }
+                }
+
+                // Эмитим ОБЩЕЕ количество скрытых постов
+                // Теперь, если сервер вернет 0 новых постов, плашка не скроется,
+                // пока пользователь не нажмет на неё и не сделает все посты видимыми
+                emit(dao.countHiddenPosts())
+
+            } catch (e: Exception) {
+                // Ловим ошибки внутри цикла, чтобы НЕ убивать Flow
+                // При сетевой ошибке или сбое БД мы просто перейдем к следующей итерации
+                e.printStackTrace()
             }
-
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
-            dao.insert(body.toEntity())
-            emit(body.size)
         }
-    }.catch { e -> throw AppError.from(e) }
+    }
 
-    override val data = dao.getAllVisible().map { entities -> entities.map { it.toDto() } }
+//    override val data: Flow<PagingData<Post>> = Pager(
+//        config = PagingConfig(pageSize = 10 , enablePlaceholders = false),
+//        pagingSourceFactory = { PostPagingSource(apiService) },
+//    ).flow
+
+    override val data: Flow<PagingData<Post>> = Pager(
+        config = PagingConfig(
+            pageSize = 10,
+            enablePlaceholders = false
+        ),
+        pagingSourceFactory = { dao.getVisiblePostsPaged() } // Используем DAO
+    ).flow.map { pagingData ->
+        // Трансформация: PostEntity -> Post
+        pagingData.map { entity -> entity.toDto() }
+    }
+
+//Используется для работы с локальной базой данных
+//    override val data = dao.getAllVisible().map { entities -> entities.map { it.toDto() } }
 
     override suspend fun fetchNewPosts(lastKnownId: Long): Int {
         val response = apiService.getNewer(lastKnownId)
@@ -114,12 +166,14 @@ class PostRepositoryImpl @Inject constructor(
             dao.insert(PostEntity.fromDto(post))
         } else {
             //Для постов, которые не синхронизированы, вернем флаг и исходное состояние.
-            dao.insert(
-                PostEntity.fromDto(post).copy(
-                    isSynced = false,
-                    syncStatus = post.syncStatus
+            post.syncStatus?.let {
+                dao.insert(
+                    PostEntity.fromDto(post).copy(
+                        isSynced = false,
+                        syncStatus = it
+                    )
                 )
-            )
+            }
         }
 
     }
@@ -162,6 +216,9 @@ class PostRepositoryImpl @Inject constructor(
             throw UnknownError
         }
     }
+
+    override fun getPostById(id: Long): Flow<Post?> =
+        dao.getPostById(id).map { it?.toDto() }
 
     //Не работает с текущим сервером
     override suspend fun shareById(id: Long): Post {

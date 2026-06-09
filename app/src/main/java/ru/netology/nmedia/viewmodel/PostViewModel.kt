@@ -7,15 +7,23 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.MediaUpload
 import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.PostRepository
@@ -26,22 +34,50 @@ private val noPhoto = PhotoModel()
 
 @HiltViewModel
 class PostViewModel @Inject constructor(
-    private val repository: PostRepository
+    private val repository: PostRepository,
+    auth: AppAuth,
 ) : ViewModel() {
+    // Триггер: изменяется, когда нужно показать новые посты
+    private val showHiddenTrigger = MutableStateFlow(false)
+
+
     private val _state = MutableLiveData(FeedModelState())
     val state: LiveData<FeedModelState>
         get() = _state
 
-    val data: LiveData<FeedModel> = repository.data.map {
-        FeedModel(it, it.isEmpty())
-    }
-        .catch { it.printStackTrace() }
-        .asLiveData(Dispatchers.Default)
+    private val cached = repository
+        .data
+        .cachedIn(viewModelScope)
 
-    val newerCount: LiveData<Int> = data.switchMap {
-        repository.getNewerCount(it.posts.firstOrNull()?.id ?: 0L)
-            .catch { e -> e.printStackTrace() }
+    val data: Flow<PagingData<Post>> = auth.authStateFlow
+        .flatMapLatest { (myId, _) ->
+            cached.map { pagingData ->
+                pagingData.map { post ->
+                    post.copy()
+                }
+            }
+        }.flowOn(Dispatchers.Default)
+
+
+    //  Создаем хранилище для "якоря" (последний загруженный ID)
+    // Инициализируем 0, чтобы при старте грузились все новые посты
+    private val _anchorId = MutableLiveData<Long>(0L)
+
+    val newerCount: LiveData<Int> = _anchorId.switchMap { anchorId ->
+        repository.getNewerCount()
+            .catch { e ->
+                e.printStackTrace()
+                // Можно эмитить 0 при ошибке, чтобы не вешать интерфейс
+                flowOf(0)
+            }
             .asLiveData(Dispatchers.Default)
+    }
+
+
+
+    // Публичный метод для обновления якоря из UI
+    fun updateAnchorId(id: Long) {
+        _anchorId.value = id
     }
 
     private val _hiddenPostsCount = MutableLiveData<Int>(0)
@@ -134,6 +170,8 @@ class PostViewModel @Inject constructor(
     }
 
     fun showHiddenPosts() {
+        showHiddenTrigger.value = true
+
         viewModelScope.launch {
             try {
                 // Делаем все скрытые посты видимыми
@@ -161,6 +199,8 @@ class PostViewModel @Inject constructor(
             }
         }
     }
+
+    fun getPostById(id: Long): Flow<Post?> = repository.getPostById(id)
 }
 
 
