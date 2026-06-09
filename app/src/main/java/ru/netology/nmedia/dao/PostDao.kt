@@ -1,5 +1,6 @@
 package ru.netology.nmedia.dao
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy.Companion.REPLACE
@@ -64,4 +65,11 @@ interface PostDao {
 
     @Query("UPDATE PostEntity SET shareCount = shareCount + 1 WHERE id = :id")
     suspend fun shareById(id: Long)
+
+    @Query("SELECT * FROM PostEntity WHERE id = :id")
+    fun getPostById(id: Long): Flow<PostEntity?>
+
+    @Query("SELECT * FROM PostEntity WHERE isVisible = 1 ORDER BY id DESC")
+    fun getVisiblePostsPaged(): PagingSource<Int, PostEntity>
+
 }

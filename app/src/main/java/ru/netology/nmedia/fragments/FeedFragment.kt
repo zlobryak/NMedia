@@ -11,9 +11,17 @@ import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.paging.LoadState
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.PostListener
 import ru.netology.nmedia.adapter.PostsAdapter
@@ -123,10 +131,20 @@ class FeedFragment : Fragment() {
             }
         }
 
-        // Наблюдаем за изменением списка постов в ViewModel и обновляем UI через submitList
-        viewModel.data.observe(viewLifecycleOwner) { state ->
-            adapter.submitList(state.posts)
-            binding.empty.isVisible = state.empty
+        // Наблюдаем за изменением списка постов в ViewModel и обновляем UI
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.data.collectLatest { adapter.submitData(it) }
+            }
+        }
+
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                adapter.loadStateFlow.collect { loadStates ->
+                    binding.empty.isVisible =
+                        loadStates.refresh is LoadState.NotLoading && adapter.itemCount == 0
+                }
+            }
         }
 
 
@@ -145,14 +163,38 @@ class FeedFragment : Fragment() {
         //Показываем плашку, если есть новые посты
         viewModel.newerCount.observe(viewLifecycleOwner) { count ->
             binding.newPostsChip.isVisible = count > 0
-            println(count)
+            println("New posts count: $count")
         }
+
+// Обновляем якорь, когда подгрузились новые данные
+// отслеживаем, когда пользователь дошел до конца
+        binding.list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                val layoutManager = recyclerView.layoutManager as? LinearLayoutManager ?: return
+                val lastVisiblePosition = layoutManager.findLastCompletelyVisibleItemPosition()
+
+                // Если доскроллили до последнего элемента
+                if (layoutManager.findLastCompletelyVisibleItemPosition() == recyclerView.adapter?.itemCount?.minus(
+                        1
+                    )
+                ) {
+                    // Берем пост из адаптера и передаем его ID в ViewModel
+                    val adapter = recyclerView.adapter as? PostsAdapter
+                    val lastPost =
+                        adapter?.peek(lastVisiblePosition)
+
+                    lastPost?.let { post ->
+                        viewModel.updateAnchorId(post.id)
+                    }
+                }
+            }
+        })
 
         //Обработка нажатия на плашку для плавной прокрутки новых постов
         binding.newPostsChip.setOnClickListener {
             binding.newPostsChip.isVisible = false
             viewModel.showHiddenPosts()
-            //Тут важен порядок отрисовки. Прокрутка вверх должна происходит после тог, как потсы для отображения будут помечены как видимые
+            //Тут важен порядок отрисовки. Прокрутка вверх должна происходит после того, как потсы для отображения будут помечены как видимые
             binding.list.post {
                 binding.list.smoothScrollToPosition(0)
             }
@@ -162,6 +204,19 @@ class FeedFragment : Fragment() {
         binding.addButton.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                adapter.loadStateFlow.collectLatest { state ->
+                    binding.swiperefresh.isRefreshing =
+                        state.refresh is LoadState.Loading ||
+                                state.prepend is LoadState.Loading ||
+                                state.append is LoadState.Loading
+                }
+            }
+        }
+
+        binding.swiperefresh.setOnRefreshListener(adapter::refresh)
 
         // Настройка SwipeRefreshLayout
         binding.swiperefresh.setOnRefreshListener {

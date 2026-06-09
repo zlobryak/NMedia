@@ -1,4 +1,4 @@
-package ru.netology.nmedia.model
+    package ru.netology.nmedia.model
 
 import ru.netology.nmedia.dto.Post
 import kotlin.collections.List

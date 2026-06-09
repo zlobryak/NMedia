@@ -85,6 +85,8 @@ dependencies {
     implementation(libs.logging.interceptor)
     implementation(libs.timber)
     implementation(libs.imagepicker)
+    implementation(libs.androidx.paging.runtime)
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
+    implementation("androidx.room:room-paging:2.8.4")
 }

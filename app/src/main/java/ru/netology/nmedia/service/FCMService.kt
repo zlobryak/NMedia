@@ -13,6 +13,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
+import jakarta.inject.Inject
 import ru.netology.nmedia.R
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.Post
@@ -22,17 +23,15 @@ import ru.netology.nmedia.dto.Post
  * Поддерживает два типа событий: "NewPost" (новый пост в ленте) и "LIKE" (лайк от пользователя).
  * При получении соответствующего сообщения формирует и отображает системное уведомление,
  * если приложению предоставлено разрешение POST_NOTIFICATIONS.
- *
- * Также отвечает за создание уведомления канала (начиная с Android Oreo/API 26)
- * и логирование нового FCM-токена устройства.
  */
 @AndroidEntryPoint
 class FCMService : FirebaseMessagingService() {
 
-lateinit var appAuth: AppAuth
+    @Inject
+    lateinit var appAuth: AppAuth
 
     /**
-     * Ключ для получения содержимого (payload) из данных FCM-сообщения.
+     * Ключ для получения содержимого из данных FCM-сообщения.
      */
     private val content = "content"
 
@@ -214,7 +213,6 @@ lateinit var appAuth: AppAuth
         appAuth.sendPushToken(token)
     }
 }
-
 
 /**
  * DTO-класс для передачи данных о лайке через FCM.

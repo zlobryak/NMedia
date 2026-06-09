@@ -7,8 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentLoginBinding
 import ru.netology.nmedia.viewmodel.AuthFragmentViewModel
@@ -20,8 +22,6 @@ class AuthFragment : Fragment() {
     private val viewModel: AuthFragmentViewModel by activityViewModels()
 
     private var _binding: FragmentLoginBinding? = null
-    private val binding get() = _binding!!
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,6 +44,7 @@ class AuthFragment : Fragment() {
             Toast.makeText(requireContext(), "Вход...", Toast.LENGTH_SHORT).show()
             viewModel.login(username, password)
 
+
         }
 
         // Наблюдаем за состоянием авторизации
@@ -57,6 +58,10 @@ class AuthFragment : Fragment() {
                 is LoginState.Success -> {
                     binding.loading.visibility = View.GONE
                     binding.loginButton.isEnabled = true
+                    //Обновим посты после удачного логина, так что бы все новые сразу стали видимы
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        viewModel.refresh()
+                    }
                     // Переход к следующему экрану
                     findNavController().navigate(
                         R.id.action_loginFragment_to_feedFragment
