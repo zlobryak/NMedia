@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.databinding.FragmentPostImageBinding
 import ru.netology.nmedia.functions.counterFormatter
 import ru.netology.nmedia.viewmodel.PostViewModel
@@ -17,6 +18,7 @@ import ru.netology.nmedia.fragments.NewPostFragment.Companion.postArg
 /**
  * Фрагмент для полноэкранного просмотра изображения поста
  */
+@AndroidEntryPoint
 class PostImageFragment : Fragment() {
 
     private var _binding: FragmentPostImageBinding? = null

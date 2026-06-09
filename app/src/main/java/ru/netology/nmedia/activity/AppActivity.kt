@@ -20,10 +20,12 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.ActivityAppBinding
 import ru.netology.nmedia.viewmodel.AuthViewModel
+import javax.inject.Inject
 import kotlin.apply
 import kotlin.getValue
 
@@ -31,7 +33,9 @@ import kotlin.getValue
  * Главная активность приложения, отображающая навигацию через NavHostFragment.
  * Обрабатывает входящие Intent'ы с действием ACTION_SEND (например, "Поделиться" из других приложений).
  */
-class AppActivity : AppCompatActivity() {
+@AndroidEntryPoint
+class AppActivity : AppCompatActivity() {    @Inject
+    lateinit var appAuth: AppAuth
     private val viewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,7 +83,7 @@ class AppActivity : AppCompatActivity() {
                     }
 
                     R.id.signout -> {
-                        AppAuth.getInstance().removeAuth()
+                        appAuth.removeAuth()
                         true
                     }
 
@@ -138,12 +142,16 @@ class AppActivity : AppCompatActivity() {
 
         requestPermissions(arrayOf(permission), 1)
 
-        //TODO Временная авторизация из лекции
-//        AppAuth.getInstance().setAuth(5, "x-token")
     }
 
+    @Inject
+    lateinit var firebaseMessaging: FirebaseMessaging
+
+    @Inject
+    lateinit var googleApiAvailability: GoogleApiAvailability
+
         private fun checkGoogleApiAvailability() {
-            with(GoogleApiAvailability.getInstance()) {
+            with(googleApiAvailability) {
                 val code = isGooglePlayServicesAvailable(this@AppActivity)
                 if (code == ConnectionResult.SUCCESS) {
                     return@with
@@ -158,7 +166,7 @@ class AppActivity : AppCompatActivity() {
                 ).show()
             }
 
-            FirebaseMessaging.getInstance().token.addOnSuccessListener {
+            firebaseMessaging.token.addOnSuccessListener {
                 println(it)
             }
         }

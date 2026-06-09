@@ -1,20 +1,34 @@
 package ru.netology.nmedia.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import jakarta.inject.Inject
 import kotlinx.coroutines.launch
-import ru.netology.nmedia.api.Api
+import ru.netology.nmedia.api.ApiService
 import ru.netology.nmedia.auth.AppAuth
 
-class AuthFragmentViewModel : ViewModel() {
+
+@HiltViewModel
+class AuthFragmentViewModel @Inject constructor(
+    private val appAuth: AppAuth,
+    private val apiService: ApiService
+
+) : ViewModel() {
 
     // Приватный MutableLiveData для изменения состояния внутри ViewModel
     private val _loginState = MutableLiveData<LoginState>()
 
     // Публичный LiveData для наблюдения из Fragment
     val loginState: LiveData<LoginState> = _loginState
+
 
     /**
      * Метод авторизации
@@ -25,13 +39,13 @@ class AuthFragmentViewModel : ViewModel() {
             _loginState.value = LoginState.Loading
 
             try {
-                val response = Api.service.authenticate(username, password)
+                val response = apiService.authenticate(username, password)
 
                 if (response.isSuccessful && response.body() != null) {
                     val authData = response.body()!!
 
                     // Сохраняем токен и ID в хранилище
-                    AppAuth.getInstance().setAuth(authData.id, authData.token)
+                    appAuth.setAuth(authData.id, authData.token)
 
                     _loginState.value = LoginState.Success
                 } else {
